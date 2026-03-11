@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario - Muni Virtual</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="estilos-calendario.css">
+</head>
+<body>
+
+    <aside class="sidebar">
+        <h2>RESERVAS <br><span id="area-titulo" style="color:var(--muni-yellow)">MUNI VIRTUAL</span></h2>
+        
+        <div class="form-group">
+            <label>Nombre del Solicitante</label>
+            <input type="text" id="nombre" placeholder="Nombre completo">
+        </div>
+
+        <div class="form-group">
+            <label>Tipo de Solicitud</label>
+            <select id="tipo-solicitud">
+                <option value="Alquiler">Alquiler</option>
+                <option value="Concesión">Concesión</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Actividad / Motivo</label>
+            <input type="text" id="actividad" placeholder="Ej. Evento Deportivo">
+        </div>
+        
+        <div class="form-group">
+            <label>Fecha del Servicio</label>
+            <input type="date" id="fecha-reserva">
+        </div>
+        
+        <div class="form-group">
+            <label>Hora de Inicio</label>
+            <select id="hora-inicio"></select>
+        </div>
+        
+        <div class="form-group">
+            <label>Duración</label>
+            <select id="duracion">
+                <option value="1">1 Hora</option>
+                <option value="2">2 Horas</option>
+                <option value="3">3 Horas</option>
+                <option value="4">4 Horas</option>
+                <option value="5">5 Horas</option>
+                <option value="full">Día Completo</option>
+            </select>
+        </div>
+        
+        <button id="btn-reservar">Registrar Ahora</button>
+    </aside>
+
+    <div id="calendar-container">
+        <div id="calendar"></div>
+    </div>
+
+    <script src="funciones-calendario.js"></script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+/* --- RESET Y ESTRUCTURA --- */
+html, body {
+    margin: 0; padding: 0;
+    height: 100vh; width: 100vw;
+    overflow: hidden;
+    font-family: 'Montserrat', sans-serif;
+    background-color: #f4f7f9;
+}
+
+.admin-wrapper { 
+    display: flex; 
+    flex-direction: column; 
+    height: 100vh; 
+    width: 100%;
+}
+
+/* --- NAVEGACIÓN SUPERIOR --- */
+.admin-nav {
+    background: #2c5697; 
+    height: 70px;
+    display: flex; 
+    align-items: center;
+    padding: 0 50px; 
+    flex-shrink: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+.nav-container { display: flex; width: 100%; align-items: center; }
+.admin-nav h1 { color: white; font-size: 1.4rem; margin: 0; font-weight: 800; }
+.admin-nav h1 span { color: #fdd808; }
+.nav-buttons { display: flex; gap: 15px; margin-left: 40px; }
+.admin-nav button {
+    background: transparent; color: white; border: 1px solid rgba(255,255,255,0.4);
+    padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.3s;
+}
+.admin-nav button.active { background: #fdd808; color: #2c5697; border-color: #fdd808; }
+.btn-salir { margin-left: auto; border-color: #ff4d4d !important; color: #ff4d4d !important; }
+
+/* --- CUERPO PRINCIPAL --- */
+#main-content { 
+    display: flex; 
+    flex: 1; 
+    width: 100%;
+    overflow: hidden; 
+}
+
+/* IMPORTANTE: Las vistas deben ocupar TODO el ancho */
+.content-view { 
+    display: flex; 
+    width: 100%; 
+    height: 100%; 
+}
+
+/* --- SIDEBAR --- */
+.sidebar-admin {
+    width: 350px; 
+    background: #2c5697; 
+    color: white;
+    padding: 40px 30px; 
+    flex-shrink: 0;
+    display: flex; 
+    flex-direction: column; 
+    gap: 25px;
+    box-sizing: border-box;
+}
+.sidebar-title { font-weight: 800; font-size: 1.5rem; margin: 0; }
+.sidebar-title span { color: #fdd808; }
+.form-group-admin { display: flex; flex-direction: column; gap: 8px; }
+.form-group-admin label { font-size: 0.8rem; font-weight: 600; opacity: 0.9; }
+.form-group-admin select { padding: 12px; border-radius: 8px; border: none; font-family: 'Montserrat'; }
+.info-box-admin {
+    font-size: 0.85rem; line-height: 1.5; background: rgba(255,255,255,0.1);
+    padding: 15px; border-radius: 10px; border-left: 4px solid #fdd808;
+}
+
+/* --- CONTENEDOR DEL CALENDARIO (ESTIRADO) --- */
+.calendar-wrapper-admin { 
+    flex-grow: 1; /* Esto obliga a usar todo el espacio derecho */
+    padding: 25px; 
+    overflow-y: auto; 
+    background-color: #f4f7f9;
+}
+
+#calendar { 
+    background: white; 
+    padding: 20px; 
+    border-radius: 15px; 
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    width: 100%; /* Calendario al 100% de su contenedor */
+}
+
+/* --- SECCIÓN USUARIOS (ESTIRADA) --- */
+.usuarios-container { 
+    flex-grow: 1;
+    padding: 50px; 
+    width: 100%; 
+    box-sizing: border-box;
+    overflow-y: auto; 
+}
+.header-seccion h2 { color: #2c5697; font-weight: 800; margin: 0; font-size: 2rem;}
+.header-seccion p { color: #666; margin-bottom: 30px; }
+
+.form-crear-cajera {
+    background: white; padding: 25px; border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    display: flex; gap: 20px; align-items: flex-end; margin-bottom: 40px;
+}
+.input-field { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+.input-field label { font-size: 0.75rem; font-weight: 700; color: #2c5697; text-transform: uppercase; }
+.input-field input { padding: 12px; border: 2px solid #f0f2f5; border-radius: 8px; outline: none; font-family: 'Montserrat'; }
+.btn-crear {
+    background: #2c5697; color: white; border: none; padding: 13px 25px;
+    border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.3s;
+}
+
+/* TABLA MODERNA */
+.tabla-admin { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+.tabla-admin th { padding: 15px; text-align: left; color: #2c5697; font-weight: 800; font-size: 0.8rem; }
+.tabla-admin tbody tr { background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+.tabla-admin td { padding: 15px; color: #444; }
+.tabla-admin td:first-child { border-radius: 10px 0 0 10px; }
+.tabla-admin td:last-child { border-radius: 0 10px 10px 0; }
+.badge-rol { background: #e8f0fe; color: #2c5697; padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
+.btn-delete { background: #fff0f0; color: #ff4d4d; border: none; padding: 8px 15px; border-radius: 6px; font-weight: 700; cursor: pointer; }

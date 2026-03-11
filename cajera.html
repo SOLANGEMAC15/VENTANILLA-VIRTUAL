@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Módulo de Caja - Muni Virtual</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background: #f0f2f5; margin: 0; }
+        header { background: #2c5697; color: white; padding: 20px 50px; display: flex; justify-content: space-between; }
+        .container { padding: 50px; max-width: 800px; margin: 0 auto; }
+        .search-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); text-align: center; }
+        input { width: 60%; padding: 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 1.2rem; text-align: center; }
+        button { padding: 15px 30px; background: #fdd808; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <header>
+        <div>MUNI<span>VIRTUAL</span> - MÓDULO DE CAJA</div>
+        <a href="acceso.html" style="color: white; text-decoration: none;">Cerrar Sesión</a>
+    </header>
+    <div class="container">
+        <div class="search-card">
+            <h2>Verificación de Pago</h2>
+            <p>Ingrese el código de 6 dígitos de la ficha de reserva:</p>
+            <input type="text" id="cod" maxlength="6" placeholder="000000">
+            <button onclick="validar()">BUSCAR</button>
+        </div>
+    </div>
+    <script>
+        function validar() {
+            const cod = document.getElementById('cod').value;
+            if(cod.length === 6) {
+                Swal.fire({
+                    title: 'Ficha Encontrada',
+                    html: `<div style="text-align:left;"><b>Solicitante:</b> Juan Perez<br><b>Monto:</b> S/ 50.00</div>`,
+                    showCancelButton: true,
+                    confirmButtonText: 'REGISTRAR PAGO',
+                    confirmButtonColor: '#28a745'
+                }).then((r) => {
+                    if(r.isConfirmed) Swal.fire('Pago Verificado', 'La reserva ahora puede ser aprobada por el admin.', 'success');
+                });
+            } else {
+                Swal.fire('Error', 'Ingrese un código válido', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

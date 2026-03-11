@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Muni Virtual - Acceso Personal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root { --muni-dark: #2c5697; --muni-yellow: #fdd808; --white: #ffffff; }
+        body { font-family: 'Montserrat', sans-serif; background: #f4f7f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: var(--white); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        .login-card h2 { color: var(--muni-dark); font-weight: 800; margin-bottom: 20px; }
+        .login-card h2 span { color: var(--muni-yellow); }
+        .input-group { text-align: left; margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 5px; color: #555; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: var(--muni-dark); color: white; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        button:hover { background: var(--muni-yellow); color: var(--muni-dark); }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>MUNI<span>VIRTUAL</span></h2>
+        <p style="font-size: 0.9rem; color: #666; margin-bottom: 25px;">Acceso para Personal Municipal</p>
+        <form id="loginForm">
+            <div class="input-group">
+                <label>Usuario</label>
+                <input type="text" id="usuario" placeholder="Ej. admin" required>
+            </div>
+            <div class="input-group">
+                <label>Contraseña</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit">INGRESAR AL PANEL</button>
+        </form>
+    </div>
+    <script>
+        document.getElementById('loginForm').onsubmit = function(e) {
+            e.preventDefault();
+            const u = document.getElementById('usuario').value;
+            const p = document.getElementById('password').value;
+
+            if(u === "admin" && p === "admin123") {
+                window.location.href = "admin.html";
+            } else if(u.startsWith("cajera") && p === "caja123") {
+                window.location.href = "cajera.html";
+            } else {
+                Swal.fire('Error', 'Credenciales incorrectas', 'error');
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Administrador - Muni Virtual</title>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="estilos-calendario.css">
+    <link rel="stylesheet" href="estilos-admin.css">
+</head>
+<body>
+
+    <div class="admin-wrapper">
+        <nav class="admin-nav">
+            <div class="nav-container">
+                <h1>MUNI<span>ADMIN</span></h1>
+                <div class="nav-buttons">
+                    <button id="btn-cal" class="active" onclick="ver('calendario')">CALENDARIO</button>
+                    <button id="btn-usu" onclick="ver('usuarios')">GESTIÓN CAJERAS</button>
+                </div>
+                <button onclick="window.location.href='acceso.html'" class="btn-salir">SALIR</button>
+            </div>
+        </nav>
+
+        <div id="main-content">
+            <div id="seccion-calendario" class="content-view">
+                <aside class="sidebar-admin">
+                    <h2 class="sidebar-title">CONTROL <br><span>TOTAL</span></h2>
+                    
+                    <div class="form-group-admin">
+                        <label>Seleccionar Local</label>
+                        <select id="area-admin">
+                            <option>Adm. Tributaria</option>
+                            <option>Seguridad Ciudadana</option>
+                            <option>Obras Privadas</option>
+                        </select>
+                    </div>
+                    
+                    <div class="info-box-admin">
+                        Haz clic en una reserva del calendario para <b>Aprobar</b> o <b>Eliminar</b> la solicitud.
+                    </div>
+                </aside>
+
+                <div class="calendar-wrapper-admin">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+
+            <div id="seccion-usuarios" class="content-view" style="display: none;">
+                <div class="usuarios-container">
+                    <div class="header-seccion">
+                        <h2>Gestión de Personal de Caja</h2>
+                        <p>Crea y administra las cuentas para el módulo de pagos.</p>
+                    </div>
+                    
+                    <div class="form-crear-cajera">
+                        <div class="input-field">
+                            <label>Usuario</label>
+                            <input type="text" id="new-u" placeholder="Ej. cajera3">
+                        </div>
+                        <div class="input-field">
+                            <label>Contraseña</label>
+                            <input type="password" id="new-p" placeholder="••••••••">
+                        </div>
+                        <button class="btn-crear" onclick="agregarCajera()">CREAR USUARIO</button>
+                    </div>
+
+                    <table class="tabla-admin">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Rol</th>
+                                <th>Contraseña</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-usuarios">
+                            <tr>
+                                <td><b>cajera1</b></td>
+                                <td><span class="badge-rol">Caja</span></td>
+                                <td><code>caja123</code></td>
+                                <td><button class="btn-delete" onclick="this.closest('tr').remove()">ELIMINAR</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="funciones-admin.js"></script>
+</body>
+</html>

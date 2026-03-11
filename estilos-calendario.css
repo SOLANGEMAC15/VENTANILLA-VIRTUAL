@@ -1,0 +1,125 @@
+:root {
+    --muni-dark: #2c5697;    
+    --muni-blue: #2974b8;    
+    --muni-yellow: #fdd808;  
+    --muni-bg: #f4f7f9;      
+    --white: #ffffff;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: var(--muni-bg);
+    margin: 0;
+    display: flex;
+    height: 100vh;
+}
+
+/* BARRA LATERAL */
+.sidebar {
+    width: 340px;
+    background: var(--muni-dark);
+    padding: 40px 30px;
+    color: white;
+    box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.sidebar h2 { 
+    font-weight: 800; 
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    border-bottom: 3px solid var(--muni-yellow);
+    padding-bottom: 10px;
+}
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 0.85rem; font-weight: 600; opacity: 0.9; }
+
+input, select {
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+button#btn-reservar {
+    background: var(--muni-yellow);
+    color: var(--muni-dark);
+    border: none;
+    padding: 16px;
+    border-radius: 6px;
+    font-weight: 800;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 15px;
+}
+
+button#btn-reservar:hover {
+    background: var(--white);
+    transform: scale(1.02);
+}
+
+/* CONTENEDOR DEL CALENDARIO */
+#calendar-container {
+    flex-grow: 1;
+    padding: 50px;
+    overflow-y: auto;
+    display: flex;
+    align-items: flex-start;
+}
+
+.fc { 
+    background: var(--white); 
+    padding: 20px; 
+    border-radius: 20px; 
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    width: 100%;
+    max-width: 1200px;
+}
+
+/* Estilos de botones de navegación */
+.fc-button-primary {
+    background-color: var(--muni-blue) !important;
+    border: none !important;
+}
+
+.fc-today-button {
+    background-color: var(--muni-yellow) !important;
+    color: var(--muni-dark) !important;
+    font-weight: 800 !important;
+    opacity: 1 !important;
+}
+
+.fc-toolbar-title { color: var(--muni-dark); font-weight: 800; }
+
+.fc-timegrid-slot-label {
+    vertical-align: middle !important;
+}
+
+/* Colores de Eventos */
+.reserva-normal { background-color: var(--muni-blue) !important; border: none !important; padding: 4px; }
+.reserva-full { background-color: var(--muni-dark) !important; border: 2px solid var(--muni-yellow) !important; padding: 4px; }
+
+.fc-timegrid-slot {
+    height: 40px !important; 
+}
+
+.fc-timegrid-slot-label-frame {
+    height: 40px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Color para reservas pendientes (RF-12) */
+.reserva-pendiente {
+    background-color: #f39c12 !important; 
+    border: none !important;
+    opacity: 0.8;
+    color: white !important;
+}
