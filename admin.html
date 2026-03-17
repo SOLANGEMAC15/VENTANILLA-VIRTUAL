@@ -62,7 +62,14 @@
                         </div>
                         <div class="input-field">
                             <label>Contraseña</label>
-                            <input type="password" id="new-p" placeholder="••••••••">
+                            <div class="password-wrapper">
+                                <input type="password" id="new-p" placeholder="••••••••">
+                                <span id="togglePassword" class="eye-icon">
+                                    <svg id="icon-eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#666" viewBox="0 0 24 24">
+                                        <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+                                    </svg>
+                                </span>
+                            </div>
                         </div>
                         <button class="btn-crear" onclick="agregarCajera()">CREAR USUARIO</button>
                     </div>

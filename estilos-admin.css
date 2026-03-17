@@ -44,6 +44,42 @@ html, body {
     overflow: hidden; 
 }
 
+/* Contenedor relativo para el input */
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 40px; /* Espacio para que el texto no tape el ojo */
+}
+
+/* Estilo del ojo */
+.eye-icon {
+    position: absolute;
+    right: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6;
+    transition: 0.3s;
+}
+
+.eye-icon:hover {
+    opacity: 1;
+}
+
+.eye-icon svg {
+    transition: 0.3s;
+}
+
+.eye-icon:hover svg {
+    fill: #2c5697;
+}
+
 /* IMPORTANTE: Las vistas deben ocupar TODO el ancho */
 .content-view { 
     display: flex; 

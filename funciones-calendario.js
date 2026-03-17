@@ -75,8 +75,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('btn-reservar').onclick = function() {
         const ahora = new Date();
+        const fechaSeleccionada = inputFecha.value;
+        const horaInicio = parseInt(selectHora.value);
+
+        // 1. VALIDACIÓN: HORARIO DE ATENCIÓN GENERAL
         if (ahora.getDay() === 0 || ahora.getDay() === 6 || ahora.getHours() < 8 || ahora.getHours() >= 23) {
-            Swal.fire({ icon: 'error', title: 'Fuera de Horario', text: 'Atención de Lunes a Viernes de 8 a.m. a 5 p.m.', confirmButtonColor: '#2c5697' });
+            Swal.fire({ icon: 'error', title: 'Fuera de Horario', text: 'Atención de Lunes a Viernes de 8 a.m. a 11 p.m.', confirmButtonColor: '#2c5697' });
+            return;
+        }
+
+        // === 2. NUEVA VALIDACIÓN: BLOQUEAR HORAS PASADAS DE HOY ===
+        const hoyLiteral = ahora.toLocaleDateString('en-CA'); // Obtiene YYYY-MM-DD local
+        if (fechaSeleccionada === hoyLiteral && horaInicio <= ahora.getHours()) {
+            Swal.fire({ 
+                icon: 'error', 
+                title: 'Hora inválida', 
+                text: 'No puedes reservar una hora que ya pasó o que es la hora actual.', 
+                confirmButtonColor: '#2c5697' 
+            });
             return;
         }
 
@@ -88,51 +104,41 @@ document.addEventListener('DOMContentLoaded', function() {
         const correo = document.getElementById('correo').value.trim();
         const ubicacion = document.getElementById('ubicacion').value.trim();
         const actividad = document.getElementById('actividad').value.trim();
-        const fecha = inputFecha.value;
-        const horaInicio = parseInt(selectHora.value); 
         const duracionVal = document.getElementById('duracion').value;
         const tipoSolicitud = document.getElementById('tipo-solicitud').value;
         
-        // 1. VALIDACIÓN: TODOS LOS CAMPOS OBLIGATORIOS
-        if(!nombres || !apellidos || !dni || !celular || !correo || !ubicacion || !actividad || !fecha) {
+        // VALIDACIÓN: CAMPOS OBLIGATORIOS
+        if(!nombres || !apellidos || !dni || !celular || !correo || !ubicacion || !actividad || !fechaSeleccionada) {
             Swal.fire({ icon: 'warning', title: 'Campos incompletos', text: 'Por favor, rellene todos los campos del formulario.', confirmButtonColor: '#2c5697' });
             return;
         }
 
-        // 2. VALIDACIÓN ESPECÍFICA: DNI (8 dígitos numéricos)
-        const dniRegex = /^\d{8}$/;
-        if (!dniRegex.test(dni)) {
-            Swal.fire({ icon: 'error', title: 'DNI inválido', text: 'El DNI debe contener exactamente 8 números.', confirmButtonColor: '#2c5697' });
+        // VALIDACIÓN DNI Y CELULAR
+        if (!/^\d{8}$/.test(dni)) {
+            Swal.fire({ icon: 'error', title: 'DNI inválido', text: 'El DNI debe tener 8 números.', confirmButtonColor: '#2c5697' });
             return;
         }
-
-        // 3. VALIDACIÓN ESPECÍFICA: CELULAR (9 dígitos numéricos)
-        const celularRegex = /^\d{9}$/;
-        if (!celularRegex.test(celular)) {
-            Swal.fire({ icon: 'error', title: 'Celular inválido', text: 'El número de celular debe contener exactamente 9 números.', confirmButtonColor: '#2c5697' });
+        if (!/^\d{9}$/.test(celular)) {
+            Swal.fire({ icon: 'error', title: 'Celular inválido', text: 'El celular debe tener 9 números.', confirmButtonColor: '#2c5697' });
             return;
         }
 
         let horaFinNum = (duracionVal === "full") ? 23 : horaInicio + parseInt(duracionVal);
 
         if (horaFinNum > 23) {
-            Swal.fire({ 
-                icon: 'error', 
-                title: 'Horario excedido', 
-                text: 'La reserva no puede terminar después de las 11:00 p.m.', 
-                confirmButtonColor: '#2c5697' 
-            });
+            Swal.fire({ icon: 'error', title: 'Horario excedido', text: 'La reserva no puede terminar después de las 11:00 p.m.', confirmButtonColor: '#2c5697' });
             return;
         }
 
-        const inicioReserva = new Date(`${fecha}T${horaInicio < 10 ? '0'+horaInicio : horaInicio}:00:00`);
-        const finReserva = new Date(`${fecha}T${horaFinNum < 10 ? '0'+horaFinNum : horaFinNum}:00:00`);
+        const inicioReserva = new Date(`${fechaSeleccionada}T${horaInicio < 10 ? '0'+horaInicio : horaInicio}:00:00`);
+        const finReserva = new Date(`${fechaSeleccionada}T${horaFinNum < 10 ? '0'+horaFinNum : horaFinNum}:00:00`);
 
         const ocupado = calendar.getEvents().some(ev => (inicioReserva < ev.end && finReserva > ev.start));
 
         if (ocupado) {
             Swal.fire({ icon: 'error', title: 'No disponible', text: 'El horario ya está reservado.' });
         } else {
+            const primerNombre = nombres.split(' ')[0];
             const nombreCompleto = `${nombres} ${apellidos}`;
 
             if (tipoSolicitud === "Concesión") {
@@ -143,18 +149,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     className: 'reserva-concesion',
                     extendedProps: { tipo: tipoSolicitud, estado: 'Esperando respuesta', codigo: 'PENDIENTE' }
                 });
-
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Solicitud en revisión',
-                    text: 'Su solicitud de Concesión ha sido registrada. Debe esperar la respuesta del administrador.',
-                    confirmButtonColor: '#2c5697'
-                });
-
+                Swal.fire({ icon: 'info', title: 'Solicitud en revisión', text: 'Su solicitud de Concesión ha sido registrada.', confirmButtonColor: '#2c5697' });
             } else {
                 const codigoReserva = generarCodigoUnico();
                 calendar.addEvent({
-                    title: nombreCompleto,
+                    title: primerNombre,
                     start: inicioReserva,
                     end: finReserva,
                     className: 'reserva-pendiente',
@@ -164,24 +163,83 @@ document.addEventListener('DOMContentLoaded', function() {
                 Swal.fire({ 
                     icon: 'success', 
                     title: 'Reserva Registrada', 
-                    html: `<p>Tipo: <b>Alquiler</b></p><p>Código: <b>${codigoReserva}</b></p><p>Descargue su ficha PDF para pagar en Caja.</p>`,
+                    html: `<p>Código: <b>${codigoReserva}</b></p><p>Descargue su ficha PDF para pagar en Caja.</p>`,
                     confirmButtonText: 'Descargar PDF',
                     confirmButtonColor: '#2974b8'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         const { jsPDF } = window.jspdf;
                         const doc = new jsPDF();
-                        doc.setFontSize(18);
-                        doc.text("MUNI VIRTUAL - FICHA DE RESERVA", 20, 20);
+
+                        // COLORES
+                        const azul = "#2c5697";
+                        const amarillo = "#fdd808";
+                        const gris = "#555";
+                        
+                        // ENCABEZADO                    
+                        doc.setFillColor(44, 86, 151);
+                        doc.rect(0, 0, 210, 30, 'F');
+
+                        doc.setFont("helvetica", "bold");
+                        doc.setFontSize(16);
+                        doc.setTextColor(255, 255, 255);
+                        doc.text("MUNICIPALIDAD PROVINCIAL DE CAÑETE", 105, 12, { align: "center" });
+
                         doc.setFontSize(12);
-                        doc.text(`CÓDIGO DE PAGO: ${codigoReserva}`, 20, 35);
-                        doc.text(`Solicitante: ${nombreCompleto}`, 20, 45);
-                        doc.text(`DNI: ${dni} | Celular: ${celular}`, 20, 55);
-                        doc.text(`Correo: ${correo}`, 20, 65);
-                        doc.text(`Ubicación: ${ubicacion}`, 20, 75);
-                        doc.text(`Local: ${nombreArea}`, 20, 85);
-                        doc.text(`Actividad: ${actividad}`, 20, 95);
-                        doc.text(`Fecha: ${fecha} | Hora: ${horaInicio}:00`, 20, 105);
+                        doc.text("FICHA DE RESERVA - ALQUILER", 105, 20, { align: "center" });
+
+                        // SUBTÍTULO
+                        doc.setTextColor(0, 0, 0);
+                        doc.setFontSize(11);
+                        doc.text(`Código de Reserva: ${codigoReserva}`, 20, 40);
+
+                        // LÍNEA DIVISORIA
+                        doc.setDrawColor(200);
+                        doc.line(20, 45, 190, 45);
+
+                        // DATOS DEL USUARIO
+                        doc.setFont("helvetica", "bold");
+                        doc.text("DATOS DEL SOLICITANTE", 20, 55);
+
+                        doc.setFont("helvetica", "normal");
+                        doc.setTextColor(80);
+
+                        doc.text(`Nombre completo: ${nombreCompleto}`, 20, 65);
+                        doc.text(`DNI: ${dni}`, 20, 73);
+                        doc.text(`Celular: ${celular}`, 110, 73);
+                        doc.text(`Correo: ${correo}`, 20, 81);
+                        doc.text(`Dirección: ${ubicacion}`, 20, 89);
+
+                        // DATOS DE LA RESERVA
+                        doc.setFont("helvetica", "bold");
+                        doc.setTextColor(0);
+                        doc.text("DETALLE DE LA RESERVA", 20, 105);
+
+                        doc.setFont("helvetica", "normal");
+                        doc.setTextColor(80);
+
+                        doc.text(`Local: ${nombreArea}`, 20, 115);
+                        doc.text(`Actividad: ${actividad}`, 20, 123);
+                        doc.text(`Fecha: ${fechaSeleccionada}`, 20, 131);
+                        doc.text(`Hora inicio: ${horaInicio}:00`, 110, 131);
+                        doc.text(`Duración: ${duracionVal === "full" ? "Día completo" : duracionVal + " horas"}`, 20, 139);
+                        
+                        // CAJA DESTACADA (PAGO)
+                        doc.setFillColor(253, 216, 8);
+                        doc.rect(20, 150, 170, 20, 'F');
+
+                        doc.setFont("helvetica", "bold");
+                        doc.setTextColor(0);
+                        doc.text("PRESENTAR ESTE DOCUMENTO EN CAJA PARA REALIZAR EL PAGO", 105, 162, { align: "center" });
+
+
+                        // PIE DE PÁGINA
+                        doc.setFontSize(9);
+                        doc.setTextColor(120);
+                        doc.text("Este documento es válido únicamente para el trámite solicitado.", 105, 185, { align: "center" });
+                        doc.text("Municipalidad Provincial de Cañete", 105, 192, { align: "center" });
+
+                        // GUARDAR
                         doc.save(`Reserva_Alquiler_${codigoReserva}.pdf`);
                     }
                 });
@@ -196,5 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('ubicacion').value = '';
             document.getElementById('actividad').value = '';
         }
+
     };
+
 });
