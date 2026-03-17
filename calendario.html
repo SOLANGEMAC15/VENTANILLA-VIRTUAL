@@ -17,44 +17,73 @@
     <aside class="sidebar">
         <h2>RESERVAS <br><span id="area-titulo" style="color:var(--muni-yellow)">MUNI VIRTUAL</span></h2>
         
-        <div class="form-group">
-            <label>Nombre del Solicitante</label>
-            <input type="text" id="nombre" placeholder="Nombre completo">
-        </div>
+        <div class="sidebar-form-content">
+            <div class="form-group">
+                <label>Nombres</label>
+                <input type="text" id="nombres" placeholder="Nombres completos">
+            </div>
 
-        <div class="form-group">
-            <label>Tipo de Solicitud</label>
-            <select id="tipo-solicitud">
-                <option value="Alquiler">Alquiler</option>
-                <option value="Concesión">Concesión</option>
-            </select>
-        </div>
+            <div class="form-group">
+                <label>Apellidos</label>
+                <input type="text" id="apellidos" placeholder="Apellidos completos">
+            </div>
 
-        <div class="form-group">
-            <label>Actividad / Motivo</label>
-            <input type="text" id="actividad" placeholder="Ej. Evento Deportivo">
-        </div>
-        
-        <div class="form-group">
-            <label>Fecha del Servicio</label>
-            <input type="date" id="fecha-reserva">
-        </div>
-        
-        <div class="form-group">
-            <label>Hora de Inicio</label>
-            <select id="hora-inicio"></select>
-        </div>
-        
-        <div class="form-group">
-            <label>Duración</label>
-            <select id="duracion">
-                <option value="1">1 Hora</option>
-                <option value="2">2 Horas</option>
-                <option value="3">3 Horas</option>
-                <option value="4">4 Horas</option>
-                <option value="5">5 Horas</option>
-                <option value="full">Día Completo</option>
-            </select>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>DNI</label>
+                    <input type="text" id="dni" maxlength="8" placeholder="DNI">
+                </div>
+                <div class="form-group">
+                    <label>Celular</label>
+                    <input type="text" id="celular" maxlength="9" placeholder="Celular">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Correo Electrónico</label>
+                <input type="email" id="correo" placeholder="ejemplo@correo.com">
+            </div>
+
+            <div class="form-group">
+                <label>Ubicación (Casa o Local)</label>
+                <input type="text" id="ubicacion" placeholder="Dirección exacta">
+            </div>
+
+            <div class="form-group">
+                <label>Tipo de Solicitud</label>
+                <select id="tipo-solicitud">
+                    <option value="Alquiler">Alquiler</option>
+                    <option value="Concesión">Concesión</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Actividad / Motivo</label>
+                <input type="text" id="actividad" placeholder="Ej. Evento Deportivo">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Fecha del Servicio</label>
+                    <input type="date" id="fecha-reserva">
+                </div>
+                <div class="form-group">
+                    <label>Hora Inicio</label>
+                    <select id="hora-inicio"></select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Duración</label>
+                <select id="duracion">
+                    <option value="1">1 Hora</option>
+                    <option value="2">2 Horas</option>
+                    <option value="3">3 Horas</option>
+                    <option value="4">4 Horas</option>
+                    <option value="5">5 Horas</option>
+                    <option value="full">Día Completo</option>
+                </select>
+            </div>
         </div>
         
         <button id="btn-reservar">Registrar Ahora</button>

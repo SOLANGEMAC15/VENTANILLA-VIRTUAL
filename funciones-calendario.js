@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', function() {
     inputFecha.setAttribute('min', hoyStr);
     inputFecha.value = hoyStr;
 
-    // Generar horas en el select
     for (let i = 8; i <= 22; i++) {
         let hourLabel = i >= 12 ? (i === 12 ? 12 : i - 12) + ":00 p.m." : i + ":00 a.m.";
         selectHora.add(new Option(hourLabel, i < 10 ? '0'+i : i));
@@ -76,20 +75,41 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('btn-reservar').onclick = function() {
         const ahora = new Date();
-        if (ahora.getDay() === 0 || ahora.getDay() === 6 || ahora.getHours() < 8 || ahora.getHours() >= 17) {
+        if (ahora.getDay() === 0 || ahora.getDay() === 6 || ahora.getHours() < 8 || ahora.getHours() >= 23) {
             Swal.fire({ icon: 'error', title: 'Fuera de Horario', text: 'Atención de Lunes a Viernes de 8 a.m. a 5 p.m.', confirmButtonColor: '#2c5697' });
             return;
         }
 
-        const nombre = document.getElementById('nombre').value;
-        const actividad = document.getElementById('actividad').value;
+        // CAPTURA DE DATOS
+        const nombres = document.getElementById('nombres').value.trim();
+        const apellidos = document.getElementById('apellidos').value.trim();
+        const dni = document.getElementById('dni').value.trim();
+        const celular = document.getElementById('celular').value.trim();
+        const correo = document.getElementById('correo').value.trim();
+        const ubicacion = document.getElementById('ubicacion').value.trim();
+        const actividad = document.getElementById('actividad').value.trim();
         const fecha = inputFecha.value;
         const horaInicio = parseInt(selectHora.value); 
         const duracionVal = document.getElementById('duracion').value;
         const tipoSolicitud = document.getElementById('tipo-solicitud').value;
         
-        if(!nombre || !actividad || !fecha) {
-            Swal.fire({ icon: 'warning', title: 'Campos incompletos', confirmButtonColor: '#2c5697' });
+        // 1. VALIDACIÓN: TODOS LOS CAMPOS OBLIGATORIOS
+        if(!nombres || !apellidos || !dni || !celular || !correo || !ubicacion || !actividad || !fecha) {
+            Swal.fire({ icon: 'warning', title: 'Campos incompletos', text: 'Por favor, rellene todos los campos del formulario.', confirmButtonColor: '#2c5697' });
+            return;
+        }
+
+        // 2. VALIDACIÓN ESPECÍFICA: DNI (8 dígitos numéricos)
+        const dniRegex = /^\d{8}$/;
+        if (!dniRegex.test(dni)) {
+            Swal.fire({ icon: 'error', title: 'DNI inválido', text: 'El DNI debe contener exactamente 8 números.', confirmButtonColor: '#2c5697' });
+            return;
+        }
+
+        // 3. VALIDACIÓN ESPECÍFICA: CELULAR (9 dígitos numéricos)
+        const celularRegex = /^\d{9}$/;
+        if (!celularRegex.test(celular)) {
+            Swal.fire({ icon: 'error', title: 'Celular inválido', text: 'El número de celular debe contener exactamente 9 números.', confirmButtonColor: '#2c5697' });
             return;
         }
 
@@ -113,12 +133,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (ocupado) {
             Swal.fire({ icon: 'error', title: 'No disponible', text: 'El horario ya está reservado.' });
         } else {
-            // === LÓGICA DIFERENCIADA POR TIPO DE SOLICITUD ===
-            
+            const nombreCompleto = `${nombres} ${apellidos}`;
+
             if (tipoSolicitud === "Concesión") {
-                // FLUJO PARA CONCESIÓN: No genera código, avisa que debe esperar
                 calendar.addEvent({
-                    title: nombre,
+                    title: nombreCompleto,
                     start: inicioReserva,
                     end: finReserva,
                     className: 'reserva-concesion',
@@ -128,19 +147,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 Swal.fire({
                     icon: 'info',
                     title: 'Solicitud en revisión',
-                    text: 'Su solicitud de Concesión ha sido registrada. Por favor, espere la respuesta del administrador para confirmar el espacio.',
+                    text: 'Su solicitud de Concesión ha sido registrada. Debe esperar la respuesta del administrador.',
                     confirmButtonColor: '#2c5697'
                 });
 
             } else {
-                // FLUJO PARA ALQUILER: Genera código y permite descargar ficha
                 const codigoReserva = generarCodigoUnico();
                 calendar.addEvent({
-                    title: nombre,
+                    title: nombreCompleto,
                     start: inicioReserva,
                     end: finReserva,
                     className: 'reserva-pendiente',
-                    extendedProps: { tipo: tipoSolicitud, estado: 'Pendiente', codigo: codigoReserva }
+                    extendedProps: { tipo: tipoSolicitud, estado: 'Pendiente de pago', codigo: codigoReserva }
                 });
                 
                 Swal.fire({ 
@@ -153,17 +171,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (result.isConfirmed) {
                         const { jsPDF } = window.jspdf;
                         const doc = new jsPDF();
+                        doc.setFontSize(18);
                         doc.text("MUNI VIRTUAL - FICHA DE RESERVA", 20, 20);
-                        doc.text(`TIPO: ALQUILER`, 20, 30);
-                        doc.text(`CÓDIGO: ${codigoReserva}`, 20, 40);
-                        doc.text(`Solicitante: ${nombre}`, 20, 55);
-                        doc.text(`Local: ${nombreArea}`, 20, 65);
+                        doc.setFontSize(12);
+                        doc.text(`CÓDIGO DE PAGO: ${codigoReserva}`, 20, 35);
+                        doc.text(`Solicitante: ${nombreCompleto}`, 20, 45);
+                        doc.text(`DNI: ${dni} | Celular: ${celular}`, 20, 55);
+                        doc.text(`Correo: ${correo}`, 20, 65);
+                        doc.text(`Ubicación: ${ubicacion}`, 20, 75);
+                        doc.text(`Local: ${nombreArea}`, 20, 85);
+                        doc.text(`Actividad: ${actividad}`, 20, 95);
+                        doc.text(`Fecha: ${fecha} | Hora: ${horaInicio}:00`, 20, 105);
                         doc.save(`Reserva_Alquiler_${codigoReserva}.pdf`);
                     }
                 });
             }
 
-            document.getElementById('nombre').value = '';
+            // Limpiar campos
+            document.getElementById('nombres').value = '';
+            document.getElementById('apellidos').value = '';
+            document.getElementById('dni').value = '';
+            document.getElementById('celular').value = '';
+            document.getElementById('correo').value = '';
+            document.getElementById('ubicacion').value = '';
             document.getElementById('actividad').value = '';
         }
     };

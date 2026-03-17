@@ -16,15 +16,26 @@ body {
 
 /* BARRA LATERAL */
 .sidebar {
-    width: 340px;
+    width: 360px; 
     background: var(--muni-dark);
-    padding: 40px 30px;
+    padding: 30px 25px;
     color: white;
     box-shadow: 5px 0 15px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
-    gap: 20px;
 }
+
+/* Contenedor con scroll para evitar que se desborde */
+.sidebar-form-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+    margin-bottom: 15px;
+}
+
+/* Personalización del scroll de la barra lateral */
+.sidebar-form-content::-webkit-scrollbar { width: 5px; }
+.sidebar-form-content::-webkit-scrollbar-thumb { background: var(--muni-yellow); border-radius: 10px; }
 
 .sidebar h2 { 
     font-weight: 800; 
@@ -34,14 +45,21 @@ body {
     padding-bottom: 10px;
 }
 
-.form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group label { font-size: 0.85rem; font-weight: 600; opacity: 0.9; }
+/* Soporte para dos columnas */
+.form-row {
+    display: flex;
+    gap: 10px;
+}
+.form-row .form-group { flex: 1; }
+
+.form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.form-group label { font-size: 0.75rem; font-weight: 600; opacity: 0.9; }
 
 input, select {
-    padding: 12px;
+    padding: 10px;
     border: none;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 12px;
     font-family: 'Montserrat', sans-serif;
 }
 
@@ -49,13 +67,13 @@ button#btn-reservar {
     background: var(--muni-yellow);
     color: var(--muni-dark);
     border: none;
-    padding: 16px;
+    padding: 15px;
     border-radius: 6px;
     font-weight: 800;
     text-transform: uppercase;
     cursor: pointer;
     transition: all 0.3s ease;
-    margin-top: 15px;
+    flex-shrink: 0;
 }
 
 button#btn-reservar:hover {
@@ -66,7 +84,7 @@ button#btn-reservar:hover {
 /* CONTENEDOR DEL CALENDARIO */
 #calendar-container {
     flex-grow: 1;
-    padding: 50px;
+    padding: 40px;
     overflow-y: auto;
     display: flex;
     align-items: flex-start;
@@ -82,44 +100,13 @@ button#btn-reservar:hover {
     max-width: 1200px;
 }
 
-/* Estilos de botones de navegación */
-.fc-button-primary {
-    background-color: var(--muni-blue) !important;
-    border: none !important;
-}
-
-.fc-today-button {
-    background-color: var(--muni-yellow) !important;
-    color: var(--muni-dark) !important;
-    font-weight: 800 !important;
-    opacity: 1 !important;
-}
-
+.fc-button-primary { background-color: var(--muni-blue) !important; border: none !important; }
+.fc-today-button { background-color: var(--muni-yellow) !important; color: var(--muni-dark) !important; font-weight: 800 !important; opacity: 1 !important; }
 .fc-toolbar-title { color: var(--muni-dark); font-weight: 800; }
+.fc-timegrid-slot { height: 60px !important; }
 
-.fc-timegrid-slot-label {
-    vertical-align: middle !important;
-}
+/*Grosor del calendario*/
+.fc-timegrid-slot-label-frame { height: 60px !important; display: flex; align-items: center; justify-content: center; }
 
-/* Colores de Eventos */
-.reserva-normal { background-color: var(--muni-blue) !important; border: none !important; padding: 4px; }
-.reserva-full { background-color: var(--muni-dark) !important; border: 2px solid var(--muni-yellow) !important; padding: 4px; }
-
-.fc-timegrid-slot {
-    height: 40px !important; 
-}
-
-.fc-timegrid-slot-label-frame {
-    height: 40px !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Color para reservas pendientes (RF-12) */
-.reserva-pendiente {
-    background-color: #f39c12 !important; 
-    border: none !important;
-    opacity: 0.8;
-    color: white !important;
-}
+.reserva-pendiente { background-color: #f39c12 !important; border: none !important; opacity: 0.8; color: white !important; }
+.reserva-concesion { background-color: #95a5a6 !important; border: none !important; color: white !important; }

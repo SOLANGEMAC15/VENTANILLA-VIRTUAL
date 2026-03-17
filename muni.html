@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="estilos-muni.css">
 </head>
 <body>
-
     <header>
         <a href="index.html" class="logo">muni<span>virtual</span></a>
         <nav>
@@ -25,51 +24,102 @@
     </section>
 
     <div class="container">
-        <div class="areas-grid">
+        <div class="carousel-wrapper">
+            <button class="carousel-control prev" id="prevBtn">&#10094;</button>
+            
+            <div class="areas-grid" id="carousel">
+                <div class="card">
+                    <div class="icon-wrapper">💰</div>
+                    <h3>Administración Tributaria</h3>
+                    <p class="description">Gestiona tus pagos de impuesto predial, arbitrios municipales y consulta tu estado de cuenta.</p>
+                    <a href="calendario.html?area=Administración Tributaria" class="card-link">Reservar ahora →</a>
+                </div>
+                <div class="card">
+                    <div class="icon-wrapper">🛡️</div>
+                    <h3>Seguridad Ciudadana</h3>
+                    <p class="description">Central de monitoreo, reporte de incidencias y coordinación con serenazgo las 24 horas.</p>
+                    <a href="calendario.html?area=Seguridad Ciudadana" class="card-link">Reservar ahora →</a>
+                </div>
+                <div class="card">
+                    <div class="icon-wrapper">🏗️</div>
+                    <h3>Obras Privadas</h3>
+                    <p class="description">Licencias de construcción, conformidad de obra y visaciones de planos.</p>
+                    <a href="calendario.html?area=Obras Privadas" class="card-link">Reservar ahora →</a>
+                </div>
+                <div class="card">
+                    <div class="icon-wrapper">📝</div>
+                    <h3>Registro Civil</h3>
+                    <p class="description">Inscripción de nacimientos, matrimonios y defunciones. Trámites de actas certificadas.</p>
+                    <a href="calendario.html?area=Registro Civil" class="card-link">Reservar ahora →</a>
+                </div>
+                <div class="card">
+                    <div class="icon-wrapper">🚛</div>
+                    <h3>Transporte y Tránsito</h3>
+                    <p class="description">Licencias de conducir vehículos menores, papeletas y permisos de circulación.</p>
+                    <a href="calendario.html?area=Transporte y Tránsito" class="card-link">Reservar ahora →</a>
+                </div>
+                <div class="card">
+                    <div class="icon-wrapper">🌳</div>
+                    <h3>Medio Ambiente</h3>
+                    <p class="description">Gestión de parques y jardines, residuos sólidos y campañas de reciclaje municipal.</p>
+                    <a href="calendario.html?area=Medio Ambiente" class="card-link">Reservar ahora →</a>
+                </div>
+            </div>
 
+            <button class="carousel-control next" id="nextBtn">&#10095;</button>
+        </div>
+
+        <div class="view-all-container">
+            <button id="btn-view-all" class="btn-secondary">Ver todos los locales</button>
+        </div>
+
+        <div id="all-areas-section" class="all-areas-grid" style="display: none;">
+            
             <div class="card">
-                <div class="icon-wrapper">💰</div> <h3>Administración Tributaria</h3>
-                <p>Gestiona tus pagos de impuesto predial, arbitrios municipales y consulta tu estado de cuenta.</p>
-                <a href="calendario.html?area=Administración Tributaria" class="card-link">Reservar ahora &rarr;</a>
+                <div class="icon-wrapper">💰</div>
+                <h3>Administración Tributaria</h3>
+                <p class="description">Gestiona tus pagos de impuesto predial, arbitrios municipales y consulta tu estado de cuenta.</p>
+                <a href="calendario.html?area=Administración Tributaria" class="card-link">Reservar ahora →</a>
             </div>
 
             <div class="card">
                 <div class="icon-wrapper">🛡️</div>
                 <h3>Seguridad Ciudadana</h3>
-                <p>Central de monitoreo, reporte de incidencias y coordinación con serenazgo las 24 horas.</p>
-                <a href="calendario.html?area=Seguridad Ciudadana" class="card-link">Reservar ahora &rarr;</a>
+                <p class="description">Central de monitoreo, reporte de incidencias y coordinación con serenazgo las 24 horas.</p>
+                <a href="calendario.html?area=Seguridad Ciudadana" class="card-link">Reservar ahora →</a>
             </div>
 
             <div class="card">
                 <div class="icon-wrapper">🏗️</div>
                 <h3>Obras Privadas</h3>
-                <p>Licencias de construcción, conformidad de obra y visaciones de planos.</p>
-                <a href="calendario.html?area=Obras Privadas" class="card-link">Reservar ahora &rarr;</a>
+                <p class="description">Licencias de construcción, conformidad de obra y visaciones de planos.</p>
+                <a href="calendario.html?area=Obras Privadas" class="card-link">Reservar ahora →</a>
             </div>
 
             <div class="card">
                 <div class="icon-wrapper">📝</div>
                 <h3>Registro Civil</h3>
-                <p>Inscripción de nacimientos, matrimonios y defunciones. Trámites de actas certificadas.</p>
-                <a href="calendario.html?area=Registro Civil" class="card-link">Reservar ahora &rarr;</a>
+                <p class="description">Inscripción de nacimientos, matrimonios y defunciones. Trámites de actas certificadas.</p>
+                <a href="calendario.html?area=Registro Civil" class="card-link">Reservar ahora →</a>
             </div>
 
             <div class="card">
                 <div class="icon-wrapper">🚛</div>
                 <h3>Transporte y Tránsito</h3>
-                <p>Licencias de conducir vehículos menores, papeletas y permisos de circulación.</p>
-                <a href="calendario.html?area=Transporte y Tránsito" class="card-link">Reservar ahora &rarr;</a>
+                <p class="description">Licencias de conducir vehículos menores, papeletas y permisos de circulación.</p>
+                <a href="calendario.html?area=Transporte y Tránsito" class="card-link">Reservar ahora →</a>
             </div>
 
             <div class="card">
                 <div class="icon-wrapper">🌳</div>
                 <h3>Medio Ambiente</h3>
-                <p>Gestión de parques y jardines, residuos sólidos y campañas de reciclaje municipal.</p>
-                <a href="calendario.html?area=Medio Ambiente" class="card-link">Reservar ahora &rarr;</a>
+                <p class="description">Gestión de parques y jardines, residuos sólidos y campañas de reciclaje municipal.</p>
+                <a href="calendario.html?area=Medio Ambiente" class="card-link">Reservar ahora →</a>
             </div>
 
         </div>
     </div>
 
+    <script src="script-muni.js"></script>
 </body>
 </html>
