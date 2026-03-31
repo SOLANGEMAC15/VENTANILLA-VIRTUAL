@@ -19,6 +19,15 @@ document.addEventListener('DOMContentLoaded', function() {
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'timeGridWeek',
         locale: 'es',
+
+        events: function(fetchInfo, successCallback, failureCallback) {
+            const local = document.getElementById('area-admin').value;
+                fetch(`obtener_reservas.php?local=${encodeURIComponent(local)}`)
+                    .then(response => response.json())
+                    .then(data => successCallback(data))
+                    .catch(error => failureCallback(error));
+                },
+
         slotMinTime: '08:00:00',
         slotMaxTime: '23:00:00',
         allDaySlot: false,
@@ -73,6 +82,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     calendar.render();
+
+    document.getElementById('area-admin').addEventListener('change', function() {
+        calendar.refetchEvents();
+    });
 
     // --- NUEVA LÓGICA: MOSTRAR/OCULTAR CONTRASEÑA ---
     const togglePassword = document.getElementById('togglePassword');

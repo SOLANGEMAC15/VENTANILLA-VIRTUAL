@@ -74,15 +74,15 @@
             </div>
             
             <div class="form-group">
-                <label>Duración</label>
-                <select id="duracion">
-                    <option value="1">1 Hora</option>
-                    <option value="2">2 Horas</option>
-                    <option value="3">3 Horas</option>
-                    <option value="4">4 Horas</option>
-                    <option value="5">5 Horas</option>
-                    <option value="full">Día Completo</option>
-                </select>
+                <label>Duración (Horas)</label>
+                <input type="number" id="duracion" min="1" max="15" placeholder="Ej. 3">
+            </div>
+
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="todo-dia"> Día Completo
+                </label>
             </div>
         </div>
         

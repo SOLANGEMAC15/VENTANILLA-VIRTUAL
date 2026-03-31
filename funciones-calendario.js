@@ -8,6 +8,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('calendar');
     const selectHora = document.getElementById('hora-inicio');
     const inputFecha = document.getElementById('fecha-reserva');
+
+    const checkboxTodoDia = document.getElementById('todo-dia');
+    const inputDuracion = document.getElementById('duracion');
+
+    checkboxTodoDia.addEventListener('change', () => {
+        if (checkboxTodoDia.checked) {
+            inputDuracion.disabled = true;
+            inputDuracion.value = '';
+
+            selectHora.disabled = true;
+            selectHora.value = "08"; 
+        } else {
+            inputDuracion.disabled = false;
+            selectHora.disabled = false;
+        }
+    });
     
     const hoyStr = new Date().toISOString().split('T')[0];
     inputFecha.setAttribute('min', hoyStr);
@@ -67,16 +83,21 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         },
 
-        events: [],
+        events: `obtener_reservas.php?local=${encodeURIComponent(nombreArea)}`,
         eventOverlap: false,
     });
 
     calendar.render();
 
     document.getElementById('btn-reservar').onclick = function() {
+
         const ahora = new Date();
         const fechaSeleccionada = inputFecha.value;
-        const horaInicio = parseInt(selectHora.value);
+
+        const duracionInputVal = inputDuracion.value;
+        const esTodoDia = checkboxTodoDia.checked;
+
+        let horaInicio = esTodoDia ? 8 : parseInt(selectHora.value);
 
         // 1. VALIDACIÓN: HORARIO DE ATENCIÓN GENERAL
         if (ahora.getDay() === 0 || ahora.getDay() === 6 || ahora.getHours() < 8 || ahora.getHours() >= 23) {
@@ -84,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // === 2. NUEVA VALIDACIÓN: BLOQUEAR HORAS PASADAS DE HOY ===
+        // 2. NUEVA VALIDACIÓN: BLOQUEAR HORAS PASADAS DE HOY
         const hoyLiteral = ahora.toLocaleDateString('en-CA'); // Obtiene YYYY-MM-DD local
         if (fechaSeleccionada === hoyLiteral && horaInicio <= ahora.getHours()) {
             Swal.fire({ 
@@ -92,6 +113,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: 'Hora inválida', 
                 text: 'No puedes reservar una hora que ya pasó o que es la hora actual.', 
                 confirmButtonColor: '#2c5697' 
+            });
+            return;
+        }
+
+        if (!esTodoDia && (!duracionInputVal || parseInt(duracionInputVal) <= 0)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Duración inválida',
+                text: 'Ingrese una cantidad de horas válida o seleccione "Día completo".',
+                confirmButtonColor: '#2c5697'
             });
             return;
         }
@@ -104,7 +135,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const correo = document.getElementById('correo').value.trim();
         const ubicacion = document.getElementById('ubicacion').value.trim();
         const actividad = document.getElementById('actividad').value.trim();
-        const duracionVal = document.getElementById('duracion').value;
         const tipoSolicitud = document.getElementById('tipo-solicitud').value;
         
         // VALIDACIÓN: CAMPOS OBLIGATORIOS
@@ -123,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        let horaFinNum = (duracionVal === "full") ? 23 : horaInicio + parseInt(duracionVal);
+        let horaFinNum = esTodoDia ? 23 : horaInicio + parseInt(duracionInputVal);
 
         if (horaFinNum > 23) {
             Swal.fire({ icon: 'error', title: 'Horario excedido', text: 'La reserva no puede terminar después de las 11:00 p.m.', confirmButtonColor: '#2c5697' });
@@ -152,12 +182,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 Swal.fire({ icon: 'info', title: 'Solicitud en revisión', text: 'Su solicitud de Concesión ha sido registrada.', confirmButtonColor: '#2c5697' });
             } else {
                 const codigoReserva = generarCodigoUnico();
-                calendar.addEvent({
-                    title: primerNombre,
-                    start: inicioReserva,
-                    end: finReserva,
-                    className: 'reserva-pendiente',
-                    extendedProps: { tipo: tipoSolicitud, estado: 'Pendiente de pago', codigo: codigoReserva }
+
+                // Enviar a la BD
+                fetch('guardar_reserva.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+
+                    body: new URLSearchParams({
+                        nombres,
+                        apellidos,
+                        dni,
+                        celular,
+                        correo,
+                        ubicacion,
+                        actividad,
+                        tipo: tipoSolicitud,
+                        fecha: fechaSeleccionada,
+                        hora_inicio: horaInicio + ":00:00",
+                        hora_fin: horaFinNum + ":00:00",
+                        estado: 'Pendiente de pago',
+                        codigo: codigoReserva,
+                        local: nombreArea
+                    })
+                })
+
+                .then(res => res.text())
+                .then(data => {
+                    console.log("Respuesta BD:", data);
+
+                    if (data === "ocupado") {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Horario ocupado',
+                            text: 'Ese horario ya está reservado en el sistema'
+                        });
+                        return;
+                    }
+
+                    if (data === "ok") {
+                        calendar.addEvent({
+                            title: primerNombre,
+                            start: inicioReserva,
+                            end: finReserva,
+                            className: 'reserva-pendiente',
+                            extendedProps: { tipo: tipoSolicitud, estado: 'Pendiente de pago', codigo: codigoReserva }
+                        });
+
+                        calendar.refetchEvents();
+                    }
                 });
                 
                 Swal.fire({ 
@@ -170,6 +244,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (result.isConfirmed) {
                         const { jsPDF } = window.jspdf;
                         const doc = new jsPDF();
+
+                        doc.text(`Código: ${codigoReserva}`, 20, 20);
+                        doc.text(`Duración: ${esTodoDia ? "Día completo" : duracionInputVal + " hora(s)"}`, 20, 30);
 
                         // COLORES
                         const azul = "#2c5697";
@@ -222,8 +299,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         doc.text(`Actividad: ${actividad}`, 20, 123);
                         doc.text(`Fecha: ${fechaSeleccionada}`, 20, 131);
                         doc.text(`Hora inicio: ${horaInicio}:00`, 110, 131);
-                        doc.text(`Duración: ${duracionVal === "full" ? "Día completo" : duracionVal + " horas"}`, 20, 139);
-                        
+                        doc.text(`Duración: ${esTodoDia ? "Día completo" : duracionInputVal + " hora(s)"}`, 20, 139);
+
                         // CAJA DESTACADA (PAGO)
                         doc.setFillColor(253, 216, 8);
                         doc.rect(20, 150, 170, 20, 'F');
