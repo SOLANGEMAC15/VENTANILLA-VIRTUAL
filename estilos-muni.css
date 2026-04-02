@@ -42,20 +42,73 @@ nav a{ text-decoration:none; color:#333; font-weight:500; }
 
 /* TARJETAS */
 .card{
-    background:var(--white); border-radius:18px; padding:2rem;
-    display:flex; flex-direction:column; width:320px; height:360px;
-    flex-shrink:0; box-shadow:0 6px 18px rgba(0,0,0,0.06); transition:0.3s;
+    background:var(--white);
+    border-radius:18px;
+    display:flex;
+    flex-direction:column;
+    width:320px;
+    height:360px;
+    flex-shrink:0;
+    box-shadow:0 6px 18px rgba(0,0,0,0.06);
+    transition:0.3s;
+    overflow:hidden; 
+    padding:0;
 }
 .card:hover{ transform:translateY(-6px); box-shadow:0 15px 30px rgba(44,88,152,0.15); border:1px solid var(--accent-yellow); }
 
-.icon-wrapper{
-    width:60px; height:60px; background:#eef4ff; color:var(--primary-blue);
-    border-radius:12px; display:flex; align-items:center; justify-content:center;
-    font-size:1.7rem; margin-bottom:1rem;
+/* IMAGEN ARRIBA */
+.card-img{
+    width:100%;
+    height:50%;
 }
-.card h3{ font-size:1.2rem; color:var(--dark-blue); margin-bottom:0.5rem; }
-.description{ font-size:0.95rem; color:var(--text-gray); line-height:1.5; margin-bottom:1rem; }
-.card-link{ margin-top:auto; font-weight:600; text-decoration:none; color:var(--primary-blue); font-size:0.95rem; }
+
+.card-img img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+/* CONTENIDO ABAJO */
+.card-body{
+    padding:1rem;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    height:50%;
+}
+
+.card-body h3{
+    font-size:1.1rem;
+    color:var(--dark-blue);
+    margin-bottom:0.4rem;
+}
+
+/* PRECIO */
+.precio{
+    color:var(--primary-blue);
+    font-weight:700;
+    margin-bottom:0.8rem;
+}
+
+/* BOTÓN DE RESERVAR AHORA */
+.card-link{
+    margin-top:auto;
+    font-weight:600;
+    text-decoration:none;
+    background:var(--primary-blue);
+    color:white !important;
+    padding:0.5rem 1rem;
+    border-radius:8px;
+    transition:0.3s;
+    display:inline-block;
+}
+
+.card-link:hover{
+    background:var(--accent-yellow);
+    color:var(--dark-blue) !important;
+}
 
 /* FLECHAS */
 .carousel-control{

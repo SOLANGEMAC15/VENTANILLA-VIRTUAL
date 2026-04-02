@@ -38,6 +38,14 @@ document.addEventListener('DOMContentLoaded', function() {
         return Math.floor(100000 + Math.random() * 900000).toString();
     }
 
+    const precios = {
+        "Coliseo Lolo Fernández": 50,
+        "Losa Deportiva Beto D'Laura": 20,    
+        "Auditorio": 40
+    };
+
+    const nombreNormalizado = nombreArea.trim();
+
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'timeGridWeek',
         locale: 'es',
@@ -160,6 +168,14 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        const precioHora = precios[nombreNormalizado] || 0;
+
+        let horasTotales = esTodoDia ? (horaFinNum - horaInicio) : parseInt(duracionInputVal);
+
+        let totalPagar = precioHora * horasTotales;
+
+        let totalFormateado = totalPagar.toFixed(2);
+
         const inicioReserva = new Date(`${fechaSeleccionada}T${horaInicio < 10 ? '0'+horaInicio : horaInicio}:00:00`);
         const finReserva = new Date(`${fechaSeleccionada}T${horaFinNum < 10 ? '0'+horaFinNum : horaFinNum}:00:00`);
 
@@ -237,7 +253,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 Swal.fire({ 
                     icon: 'success', 
                     title: 'Reserva Registrada', 
-                    html: `<p>Código: <b>${codigoReserva}</b></p><p>Descargue su ficha PDF para pagar en Caja.</p>`,
+                    html: `
+                    <p>Código: <b>${codigoReserva}</b></p>
+                    <p>Total a pagar: <b>S/ ${totalFormateado}</b></p>
+                    <p>Descargue su ficha PDF para pagar en Caja.</p>
+                    `,
                     confirmButtonText: 'Descargar PDF',
                     confirmButtonColor: '#2974b8'
                 }).then((result) => {
@@ -245,16 +265,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         const { jsPDF } = window.jspdf;
                         const doc = new jsPDF();
 
-                        doc.text(`Código: ${codigoReserva}`, 20, 20);
-                        doc.text(`Duración: ${esTodoDia ? "Día completo" : duracionInputVal + " hora(s)"}`, 20, 30);
-
                         // COLORES
-                        const azul = "#2c5697";
-                        const amarillo = "#fdd808";
-                        const gris = "#555";
+                        const azul = [44, 86, 151];
+                        const amarillo = [253, 216, 8];
                         
                         // ENCABEZADO                    
-                        doc.setFillColor(44, 86, 151);
+                        doc.setFillColor(azul[0], azul[1], azul[2]);
                         doc.rect(0, 0, 210, 30, 'F');
 
                         doc.setFont("helvetica", "bold");
@@ -283,38 +299,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         doc.text(`Nombre completo: ${nombreCompleto}`, 20, 65);
                         doc.text(`DNI: ${dni}`, 20, 73);
-                        doc.text(`Celular: ${celular}`, 110, 73);
-                        doc.text(`Correo: ${correo}`, 20, 81);
-                        doc.text(`Dirección: ${ubicacion}`, 20, 89);
+                        doc.text(`Celular: ${celular}`, 20, 81);
+                        doc.text(`Correo: ${correo}`, 20, 89);
+                        doc.text(`Dirección: ${ubicacion}`, 20, 97);
 
                         // DATOS DE LA RESERVA
                         doc.setFont("helvetica", "bold");
                         doc.setTextColor(0);
-                        doc.text("DETALLE DE LA RESERVA", 20, 105);
+                        doc.text("DETALLE DE LA RESERVA", 20, 110);
 
                         doc.setFont("helvetica", "normal");
                         doc.setTextColor(80);
 
-                        doc.text(`Local: ${nombreArea}`, 20, 115);
-                        doc.text(`Actividad: ${actividad}`, 20, 123);
-                        doc.text(`Fecha: ${fechaSeleccionada}`, 20, 131);
-                        doc.text(`Hora inicio: ${horaInicio}:00`, 110, 131);
-                        doc.text(`Duración: ${esTodoDia ? "Día completo" : duracionInputVal + " hora(s)"}`, 20, 139);
+                        doc.text(`Local: ${nombreArea}`, 20, 120);
+                        doc.text(`Actividad: ${actividad}`, 20, 128);
+                        doc.text(`Fecha: ${fechaSeleccionada}`, 20, 136);
+                        doc.text(`Hora inicio: ${horaInicio}:00`, 20, 144);
+                        doc.text(`Duración: ${esTodoDia ? "Día completo" : duracionInputVal + " hora(s)"}`, 20, 152);
+                        doc.text(`Precio por hora: S/ ${precioHora}`, 20, 160);
+                        doc.text(`Total a pagar: S/ ${totalFormateado}`, 20, 168);
 
                         // CAJA DESTACADA (PAGO)
-                        doc.setFillColor(253, 216, 8);
-                        doc.rect(20, 150, 170, 20, 'F');
+                        doc.setFillColor(amarillo[0], amarillo[1], amarillo[2]);
+                        doc.rect(20, 180, 170, 25, 'F');
 
                         doc.setFont("helvetica", "bold");
                         doc.setTextColor(0);
-                        doc.text("PRESENTAR ESTE DOCUMENTO EN CAJA PARA REALIZAR EL PAGO", 105, 162, { align: "center" });
+                        doc.setFontSize(10);
+                        doc.text("PRESENTAR ESTE DOCUMENTO EN CAJA PARA REALIZAR EL PAGO", 105, 190, { align: "center" });
 
-
-                        // PIE DE PÁGINA
+                        doc.setFont("helvetica", "normal");
                         doc.setFontSize(9);
+                        doc.text("Este documento es válido únicamente para el trámite solicitado.", 105, 198, { align: "center" });
+                        
+                        // PIE DE PÁGINA (Fuera de la caja)
+                        doc.setFontSize(10);
                         doc.setTextColor(120);
-                        doc.text("Este documento es válido únicamente para el trámite solicitado.", 105, 185, { align: "center" });
-                        doc.text("Municipalidad Provincial de Cañete", 105, 192, { align: "center" });
+                        doc.text("Municipalidad Provincial de Cañete", 105, 215, { align: "center" });
 
                         // GUARDAR
                         doc.save(`Reserva_Alquiler_${codigoReserva}.pdf`);
