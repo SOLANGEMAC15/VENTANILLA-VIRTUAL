@@ -1,4 +1,4 @@
-// 1. LÓGICA DE NAVEGACIÓN ENTRE SECCIONES
+// LÓGICA DE NAVEGACIÓN ENTRE SECCIONES
 function ver(s) {
     document.getElementById('seccion-calendario').style.display = s === 'calendario' ? 'flex' : 'none';
     document.getElementById('seccion-usuarios').style.display = s === 'usuarios' ? 'flex' : 'none';
@@ -6,7 +6,6 @@ function ver(s) {
     document.getElementById('btn-cal').className = s === 'calendario' ? 'active' : '';
     document.getElementById('btn-usu').className = s === 'usuarios' ? 'active' : '';
     
-    // Forzar redibujado del calendario para evitar que se vea gris al cambiar de pestaña
     if(s === 'calendario') {
         window.dispatchEvent(new Event('resize'));
     }
@@ -14,19 +13,20 @@ function ver(s) {
 
 document.addEventListener('DOMContentLoaded', function() {
     
-    // --- CONFIGURACIÓN DEL CALENDARIO ---
+    // CONFIGURACIÓN DEL CALENDARIO 
     var calendarEl = document.getElementById('calendar');
+
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'timeGridWeek',
         locale: 'es',
 
         events: function(fetchInfo, successCallback, failureCallback) {
             const local = document.getElementById('area-admin').value;
-                fetch(`obtener_reservas.php?local=${encodeURIComponent(local)}`)
-                    .then(response => response.json())
-                    .then(data => successCallback(data))
-                    .catch(error => failureCallback(error));
-                },
+            fetch(`obtener_reservas.php?local=${encodeURIComponent(local)}`)
+                .then(response => response.json())
+                .then(data => successCallback(data))
+                .catch(error => failureCallback(error));
+        },
 
         slotMinTime: '08:00:00',
         slotMaxTime: '23:00:00',
@@ -34,14 +34,16 @@ document.addEventListener('DOMContentLoaded', function() {
         slotDuration: '01:00:00',
         height: 'auto',
         aspectRatio: 1.8, 
+
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
             right: 'timeGridWeek,dayGridMonth'
         },
+
         buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana' },
 
-        // Diseño de las etiquetas de hora (Ej: 8:00 a.m. - 9:00 a.m.)
+        // HORAS
         slotLabelContent: function(arg) {
             const format = (h) => {
                 let p = h >= 12 ? 'p.m.' : 'a.m.';
@@ -51,55 +53,161 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             let start = arg.date.getHours();
             let end = start + 1;
+
             return { 
                 html: `<div style="font-size: 0.7rem; font-weight: 600; color: #2c5697; padding: 5px 0;">
-                            ${format(start)} - ${format(end)}
+                        ${format(start)} - ${format(end)}
                        </div>` 
             };
         },
 
-        // Acción al hacer clic en una reserva
+        eventContent: function(arg) {
+            let info = arg.event.extendedProps;
+            
+            return {
+                html: `
+                <div style="font-size: 0.7rem; padding: 2px; line-height:1.2;">
+                <b>${arg.event.title}</b><br>
+                <span>${arg.timeText}</span><br>
+                <span>${info.tipo}</span><br>
+                <span style="font-weight:bold; color:#fff;">${info.estado}</span>
+                </div>`
+            };
+        },
+
+        // CLICK EN RESERVA
         eventClick: function(info) {
+            const datos = info.event.extendedProps;
+            let botones = {};
+            
+            // CONTROL SEGÚN ESTADO
+            if (datos.estado === "Pendiente de pago" || datos.estado === "Pagado") {
+                botones = {
+                    showDenyButton: true,
+                    confirmButtonText: 'Aprobar',
+                    denyButtonText: 'Rechazar',
+                    confirmButtonColor: '#28a745',
+                    denyButtonColor: '#dc3545'
+                };
+            } else {
+                // Si ya está aprobado o rechazado
+                botones = {
+                    showConfirmButton: false,
+                    showDenyButton: false
+                };
+            }
+            
             Swal.fire({
-                title: 'Gestión de Reserva',
-                text: `Solicitante: ${info.event.title}`,
-                showDenyButton: true,
-                showCancelButton: true,
-                confirmButtonText: 'Aprobar',
-                denyButtonText: 'Eliminar',
-                confirmButtonColor: '#28a745',
-                denyButtonColor: '#dc3545',
-                cancelButtonText: 'Cancelar'
+                title: 'Detalle de Reserva',
+                html: `
+                <b>Código:</b> ${datos.codigo}<br>        
+                <b>Nombre:</b> ${datos.nombres} ${datos.apellidos}<br>
+                <b>DNI:</b> ${datos.dni}<br>
+                <b>Celular:</b> ${datos.celular}<br>
+                <b>Correo:</b> ${datos.correo}<br>
+                <b>Ubicación:</b> ${datos.ubicacion}<br>
+                <b>Actividad:</b> ${datos.actividad}<br>
+                <b>Tipo:</b> ${datos.tipo}<br>
+                <b>Estado:</b> <b>${datos.estado}</b>
+                `,
+                showCloseButton: true,
+                ...botones
             }).then((result) => {
+
+                // APROBAR
                 if (result.isConfirmed) {
-                    info.event.setProp('backgroundColor', '#2c5697'); // Cambia a azul oficial al aprobar
-                    Swal.fire('Reserva Aprobada', 'El espacio ha sido confirmado.', 'success');
-                } else if (result.isDenied) {
-                    info.event.remove();
-                    Swal.fire('Reserva Eliminada', 'La solicitud ha sido rechazada.', 'info');
+                    
+                    // OPCIONAL: SOLO APROBAR SI ESTÁ PAGADO
+                    if (datos.estado !== "Pagado") {
+                        Swal.fire('Error', 'Primero debe estar PAGADO', 'warning');
+                        return;
+                    }
+                    
+                    fetch('actualizar_estado.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: new URLSearchParams({
+                            codigo: datos.codigo,
+                            estado: 'Aprobado'
+                        })
+                    })
+                    .then(res => res.text())
+                    .then(respuesta => {
+                        if (respuesta === "ok") {
+                            
+                            info.event.setProp('classNames', ['reserva-aprobada']);
+                            info.event.setExtendedProp('estado', 'Aprobado');
+                            
+                            Swal.fire('Aprobado', 'La reserva fue aprobada.', 'success');
+                        
+                        } else {
+                            Swal.fire('Error', 'No se pudo actualizar', 'error');
+                        }
+                    });
+                }
+                
+                // RECHAZAR
+                else if (result.isDenied) {
+                    
+                    Swal.fire({
+                        title: 'Motivo de rechazo',
+                        input: 'textarea',
+                        showCancelButton: true,
+                        confirmButtonText: 'Confirmar'
+                    }).then((motivoResult) => {
+                        
+                        if (motivoResult.isConfirmed) {
+                            
+                            fetch('actualizar_estado.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                },
+                                body: new URLSearchParams({
+                                    codigo: datos.codigo,
+                                    estado: 'Rechazado',
+                                    motivo: motivoResult.value
+                                })
+                            })
+                            .then(res => res.text())
+                            .then(respuesta => {
+                                
+                                if (respuesta === "ok") {
+                                    info.event.remove();
+                                    
+                                    Swal.fire('Rechazado', 'Reserva eliminada.', 'success');
+                                
+                                } else {
+                                    Swal.fire('Error', 'No se pudo rechazar', 'error');
+                                }
+                            });
+                        }
+                    });
                 }
             });
         }
     });
+
     calendar.render();
 
     document.getElementById('area-admin').addEventListener('change', function() {
         calendar.refetchEvents();
     });
 
-    // --- NUEVA LÓGICA: MOSTRAR/OCULTAR CONTRASEÑA ---
+    // MOSTRAR / OCULTAR CONTRASEÑA
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('new-p');
 
     if (togglePassword && passwordInput) {
         togglePassword.addEventListener('click', function() {
-            // Cambiar el tipo de input
+
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordInput.setAttribute('type', type);
-            
-            // Cambiar el icono visual
+
             const icon = document.getElementById('icon-eye');
-            
+
             if (type === 'password') {
                 icon.innerHTML = `
                 <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
@@ -111,33 +219,34 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
 });
 
-// 2. FUNCIÓN PARA AGREGAR NUEVA CAJERA A LA TABLA
+// FUNCIÓN CAJERA
 function agregarCajera() {
+
     const u = document.getElementById('new-u').value.trim();
     const p = document.getElementById('new-p').value.trim();
     
     if(u && p) {
+
         const fila = `
-            <tr>
-                <td><b>${u}</b></td>
-                <td><span class="badge-rol">Caja</span></td>
-                <td><code>${p}</code></td>
-                <td><button class="btn-delete" onclick="this.closest('tr').remove()">ELIMINAR</button></td>
-            </tr>`;
-        
+        <tr>
+            <td><b>${u}</b></td>
+            <td><span class="badge-rol">Caja</span></td>
+            <td><code>${p}</code></td>
+            <td><button class="btn-delete" onclick="this.closest('tr').remove()">ELIMINAR</button></td>
+        </tr>`;
+
         document.getElementById('tbody-usuarios').insertAdjacentHTML('beforeend', fila);
-        
+
         Swal.fire('¡Usuario Creado!', `La cajera <b>${u}</b> ha sido registrada con éxito.`, 'success');
-        
-        // Limpiar campos y resetear el ojo
+
         document.getElementById('new-u').value = '';
         document.getElementById('new-p').value = '';
         document.getElementById('new-p').setAttribute('type', 'password');
-        document.getElementById('togglePassword').textContent = '👁️';
 
     } else {
-        Swal.fire('Atención', 'Debes ingresar un nombre de usuario y una contraseña.', 'warning');
+        Swal.fire('Atención', 'Debes ingresar un usuario y contraseña.', 'warning');
     }
 }

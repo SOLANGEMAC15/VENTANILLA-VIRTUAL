@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Lógica del Carrusel (Movimiento) 
     const moveCarousel = (direction) => { 
-        const cardWidth = carouselGrid.querySelector('.card').offsetWidth + 32; // Ancho + gap 
+        const cardWidth = carouselGrid.querySelector('.card').offsetWidth + 32;
         carouselGrid.scrollBy({ 
             left: direction * cardWidth, 
             behavior: 'smooth' 

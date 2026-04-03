@@ -2,23 +2,45 @@
 include("conexion.php");
 
 // Obtener el local desde la URL
-$local = $_GET['local'] ?? '';
+$local = $conn->real_escape_string($_GET['local'] ?? '');
 
-$sql = "SELECT * FROM reservas WHERE local = '$local'";
+$sql = "SELECT * FROM reservas 
+        WHERE local = '$local'
+        AND estado != 'Rechazado'";
+
 $result = $conn->query($sql);
 
 $reservas = [];
 
 while($row = $result->fetch_assoc()) {
+
+    // DEFINIR COLOR SEGÚN ESTADO
+    $clase = "reserva-pendiente";
+
+    if ($row['estado'] === "Aprobado") {
+        $clase = "reserva-aprobada";
+    } elseif ($row['estado'] === "Pagado") {
+        $clase = "reserva-pagada";
+    }
+
+    // CREAR EVENTO
     $reservas[] = [
         "title" => explode(" ", $row['nombres'])[0],
         "start" => $row['fecha'] . "T" . $row['hora_inicio'],
         "end" => $row['fecha'] . "T" . $row['hora_fin'],
         "extendedProps" => [
             "tipo" => $row['tipo'],
-            "estado" => $row['estado']
+            "estado" => $row['estado'],
+            "nombres" => $row['nombres'],
+            "apellidos" => $row['apellidos'],
+            "dni" => $row['dni'],
+            "celular" => $row['celular'],
+            "correo" => $row['correo'],
+            "ubicacion" => $row['ubicacion'],
+            "actividad" => $row['actividad'],
+            "codigo" => $row['codigo']
         ],
-        "className" => $row['tipo'] === "Alquiler" ? "reserva-pendiente" : "reserva-concesion"
+        "className" => $clase
     ];
 }
 

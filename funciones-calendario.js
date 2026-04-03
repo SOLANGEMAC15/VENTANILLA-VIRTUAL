@@ -78,6 +78,23 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         },
 
+        eventDidMount: function(info) {
+            const estado = info.event.extendedProps.estado;
+            
+            if (estado === "Aprobado") {
+                info.el.style.backgroundColor = "#2c5697";
+                } 
+                else if (estado === "Rechazado") {
+                    info.el.style.backgroundColor = "#dc3545"; 
+                    } 
+                    else if (estado === "Pendiente de pago") {
+                        info.el.style.backgroundColor = "#ffc107"; 
+                        } 
+                        else if (estado === "Pagado") {
+                            info.el.style.backgroundColor = "#17a2b8"; 
+                            }
+                        },
+
         eventContent: function(arg) {
             let info = arg.event.extendedProps;
             return {

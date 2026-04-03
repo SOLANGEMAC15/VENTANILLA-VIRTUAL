@@ -14,13 +14,15 @@ $hora_inicio = $_POST['hora_inicio'];
 $hora_fin = $_POST['hora_fin']; 
 $estado = $_POST['estado']; 
 $codigo = $_POST['codigo']; 
-$local = $_POST['local']; 
+$local = $conn->real_escape_string($_POST['local']);
 
 // VALIDAR SI YA EXISTE RESERVA EN ESE HORARIO 
 $verificar = "SELECT * FROM reservas 
-WHERE fecha = '$fecha' 
-AND ( 
-('$hora_inicio' < hora_fin) AND ('$hora_fin' > hora_inicio) )"; 
+WHERE fecha = '$fecha'
+AND estado != 'Rechazado'
+AND (
+('$hora_inicio' < hora_fin) AND ('$hora_fin' > hora_inicio)
+)";
 
 $resultado = $conn->query($verificar); 
 
