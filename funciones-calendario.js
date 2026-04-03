@@ -131,13 +131,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // NUEVA VALIDACIÓN: BLOQUEAR HORAS PASADAS DE HOY
-        const hoyLiteral = ahora.toLocaleDateString('en-CA'); // Obtiene YYYY-MM-DD local
-        if (fechaSeleccionada === hoyLiteral && horaInicio <= ahora.getHours()) {
-            Swal.fire({ 
-                icon: 'error', 
-                title: 'Hora inválida', 
-                text: 'No puedes reservar una hora que ya pasó o que es la hora actual.', 
-                confirmButtonColor: '#2c5697' 
+        const hoy = new Date();
+        hoy.setHours(0,0,0,0);
+        
+        const fechaSel = new Date(fechaSeleccionada);
+        
+        if (fechaSel < hoy) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Fecha inválida',
+                text: 'No puedes reservar fechas pasadas.',
+                confirmButtonColor: '#2c5697'
+            });
+            return;
+        }
+        
+        // VALIDAR HORA SOLO SI ES HOY
+        if (
+            fechaSel.getTime() === hoy.getTime() &&
+            horaInicio <= ahora.getHours()
+        ) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Hora inválida',
+                text: 'No puedes reservar una hora pasada.',
+                confirmButtonColor: '#2c5697'
             });
             return;
         }
@@ -196,7 +214,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const inicioReserva = new Date(`${fechaSeleccionada}T${horaInicio < 10 ? '0'+horaInicio : horaInicio}:00:00`);
         const finReserva = new Date(`${fechaSeleccionada}T${horaFinNum < 10 ? '0'+horaFinNum : horaFinNum}:00:00`);
 
-        const ocupado = calendar.getEvents().some(ev => (inicioReserva < ev.end && finReserva > ev.start));
+        const ocupado = calendar.getEvents().some(ev => 
+            (inicioReserva < ev.end && finReserva > ev.start)
+        );
 
         if (ocupado) {
             Swal.fire({ icon: 'error', title: 'No disponible', text: 'El horario ya está reservado.' });
@@ -261,114 +281,117 @@ document.addEventListener('DOMContentLoaded', function() {
                             start: inicioReserva,
                             end: finReserva,
                             className: 'reserva-pendiente',
-                            extendedProps: { tipo: tipoSolicitud, estado: 'Pendiente de pago', codigo: codigoReserva }
+                            extendedProps: { tipo: tipoSolicitud, estado: 'Pendiente de pago', codigo: codigoReserva, local: nombreArea }
+                        });
+
+                        // Limpiar campos
+                        document.getElementById('nombres').value = '';
+                        document.getElementById('apellidos').value = '';
+                        document.getElementById('dni').value = '';
+                        document.getElementById('celular').value = '';
+                        document.getElementById('correo').value = '';
+                        document.getElementById('ubicacion').value = '';
+                        document.getElementById('actividad').value = '';
+
+                        Swal.fire({ 
+                            icon: 'success', 
+                            title: 'Reserva Registrada', 
+                            html: `
+                            <p>Código: <b>${codigoReserva}</b></p>
+                            <p>Total a pagar: <b>S/ ${totalFormateado}</b></p>
+                            <p>Descargue su ficha PDF para pagar en Caja.</p>
+                            `,
+                            confirmButtonText: 'Descargar PDF',                 
+                            confirmButtonColor: '#2974b8'
+                        
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                const { jsPDF } = window.jspdf;
+                                const doc = new jsPDF();
+
+                                // COLORES
+                                const azul = [44, 86, 151];
+                                const amarillo = [253, 216, 8];
+                        
+                                // ENCABEZADO                    
+                                doc.setFillColor(azul[0], azul[1], azul[2]);
+                                doc.rect(0, 0, 210, 30, 'F');
+                        
+                                doc.setFont("helvetica", "bold");
+                                doc.setFontSize(16);
+                                doc.setTextColor(255, 255, 255);
+                                doc.text("MUNICIPALIDAD PROVINCIAL DE CAÑETE", 105, 12, { align: "center" });
+
+                                doc.setFontSize(12);                        
+                                doc.text("FICHA DE RESERVA - ALQUILER", 105, 20, { align: "center" });
+                        
+                                // SUBTÍTULO
+                                doc.setTextColor(0, 0, 0);
+                                doc.setFontSize(11);
+                                doc.text(`Código de Reserva: ${codigoReserva}`, 20, 40);
+                        
+                                // LÍNEA DIVISORIA
+                                doc.setDrawColor(200);
+                                doc.line(20, 45, 190, 45);
+                        
+                                // DATOS DEL USUARIO
+                                doc.setFont("helvetica", "bold");
+                                doc.text("DATOS DEL SOLICITANTE", 20, 55);
+                                doc.setFont("helvetica", "normal");
+                                doc.setTextColor(80);
+                        
+                                doc.text(`Nombre completo: ${nombreCompleto}`, 20, 65);
+                                doc.text(`DNI: ${dni}`, 20, 73);
+                                doc.text(`Celular: ${celular}`, 20, 81);
+                                doc.text(`Correo: ${correo}`, 20, 89);
+                                doc.text(`Dirección: ${ubicacion}`, 20, 97);
+
+                                // DATOS DE LA RESERVA                        
+                                doc.setFont("helvetica", "bold");
+                                doc.setTextColor(0);
+                                doc.text("DETALLE DE LA RESERVA", 20, 110);
+                        
+                                doc.setFont("helvetica", "normal");
+                                doc.setTextColor(80);
+                        
+                                doc.text(`Local: ${nombreArea}`, 20, 120);
+                                doc.text(`Actividad: ${actividad}`, 20, 128);
+                                doc.text(`Fecha: ${fechaSeleccionada}`, 20, 136);
+                                doc.text(`Hora inicio: ${horaInicio}:00`, 20, 144);
+                                doc.text(`Duración: ${esTodoDia ? "Día completo" : duracionInputVal + " hora(s)"}`, 20, 152);
+                                doc.text(`Precio por hora: S/ ${precioHora}`, 20, 160);
+                                doc.text(`Total a pagar: S/ ${totalFormateado}`, 20, 168);
+                        
+                                // CAJA DESTACADA (PAGO)
+                                doc.setFillColor(amarillo[0], amarillo[1], amarillo[2]);
+                                doc.rect(20, 180, 170, 25, 'F');
+                                doc.setFont("helvetica", "bold");
+                                doc.setTextColor(0);
+                                doc.setFontSize(10);
+                                doc.text("PRESENTAR ESTE DOCUMENTO EN CAJA PARA REALIZAR EL PAGO", 105, 190, { align: "center" });
+                        
+                                doc.setFont("helvetica", "normal");
+                                doc.setFontSize(9);
+                                doc.text("Este documento es válido únicamente para el trámite solicitado.", 105, 198, { align: "center" });
+                        
+                                // PIE DE PÁGINA (Fuera de la caja)
+                                doc.setFontSize(10);
+                                doc.setTextColor(120);
+                                doc.text("Municipalidad Provincial de Cañete", 105, 215, { align: "center" });
+                        
+                                // GUARDAR
+                                doc.save(`Reserva_Alquiler_${codigoReserva}.pdf`);
+                    
+                            }
+                
                         });
 
                         calendar.refetchEvents();
                     }
                 });
                 
-                Swal.fire({ 
-                    icon: 'success', 
-                    title: 'Reserva Registrada', 
-                    html: `
-                    <p>Código: <b>${codigoReserva}</b></p>
-                    <p>Total a pagar: <b>S/ ${totalFormateado}</b></p>
-                    <p>Descargue su ficha PDF para pagar en Caja.</p>
-                    `,
-                    confirmButtonText: 'Descargar PDF',
-                    confirmButtonColor: '#2974b8'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const { jsPDF } = window.jspdf;
-                        const doc = new jsPDF();
-
-                        // COLORES
-                        const azul = [44, 86, 151];
-                        const amarillo = [253, 216, 8];
-                        
-                        // ENCABEZADO                    
-                        doc.setFillColor(azul[0], azul[1], azul[2]);
-                        doc.rect(0, 0, 210, 30, 'F');
-
-                        doc.setFont("helvetica", "bold");
-                        doc.setFontSize(16);
-                        doc.setTextColor(255, 255, 255);
-                        doc.text("MUNICIPALIDAD PROVINCIAL DE CAÑETE", 105, 12, { align: "center" });
-
-                        doc.setFontSize(12);
-                        doc.text("FICHA DE RESERVA - ALQUILER", 105, 20, { align: "center" });
-
-                        // SUBTÍTULO
-                        doc.setTextColor(0, 0, 0);
-                        doc.setFontSize(11);
-                        doc.text(`Código de Reserva: ${codigoReserva}`, 20, 40);
-
-                        // LÍNEA DIVISORIA
-                        doc.setDrawColor(200);
-                        doc.line(20, 45, 190, 45);
-
-                        // DATOS DEL USUARIO
-                        doc.setFont("helvetica", "bold");
-                        doc.text("DATOS DEL SOLICITANTE", 20, 55);
-
-                        doc.setFont("helvetica", "normal");
-                        doc.setTextColor(80);
-
-                        doc.text(`Nombre completo: ${nombreCompleto}`, 20, 65);
-                        doc.text(`DNI: ${dni}`, 20, 73);
-                        doc.text(`Celular: ${celular}`, 20, 81);
-                        doc.text(`Correo: ${correo}`, 20, 89);
-                        doc.text(`Dirección: ${ubicacion}`, 20, 97);
-
-                        // DATOS DE LA RESERVA
-                        doc.setFont("helvetica", "bold");
-                        doc.setTextColor(0);
-                        doc.text("DETALLE DE LA RESERVA", 20, 110);
-
-                        doc.setFont("helvetica", "normal");
-                        doc.setTextColor(80);
-
-                        doc.text(`Local: ${nombreArea}`, 20, 120);
-                        doc.text(`Actividad: ${actividad}`, 20, 128);
-                        doc.text(`Fecha: ${fechaSeleccionada}`, 20, 136);
-                        doc.text(`Hora inicio: ${horaInicio}:00`, 20, 144);
-                        doc.text(`Duración: ${esTodoDia ? "Día completo" : duracionInputVal + " hora(s)"}`, 20, 152);
-                        doc.text(`Precio por hora: S/ ${precioHora}`, 20, 160);
-                        doc.text(`Total a pagar: S/ ${totalFormateado}`, 20, 168);
-
-                        // CAJA DESTACADA (PAGO)
-                        doc.setFillColor(amarillo[0], amarillo[1], amarillo[2]);
-                        doc.rect(20, 180, 170, 25, 'F');
-
-                        doc.setFont("helvetica", "bold");
-                        doc.setTextColor(0);
-                        doc.setFontSize(10);
-                        doc.text("PRESENTAR ESTE DOCUMENTO EN CAJA PARA REALIZAR EL PAGO", 105, 190, { align: "center" });
-
-                        doc.setFont("helvetica", "normal");
-                        doc.setFontSize(9);
-                        doc.text("Este documento es válido únicamente para el trámite solicitado.", 105, 198, { align: "center" });
-                        
-                        // PIE DE PÁGINA (Fuera de la caja)
-                        doc.setFontSize(10);
-                        doc.setTextColor(120);
-                        doc.text("Municipalidad Provincial de Cañete", 105, 215, { align: "center" });
-
-                        // GUARDAR
-                        doc.save(`Reserva_Alquiler_${codigoReserva}.pdf`);
-                    }
-                });
             }
 
-            // Limpiar campos
-            document.getElementById('nombres').value = '';
-            document.getElementById('apellidos').value = '';
-            document.getElementById('dni').value = '';
-            document.getElementById('celular').value = '';
-            document.getElementById('correo').value = '';
-            document.getElementById('ubicacion').value = '';
-            document.getElementById('actividad').value = '';
         }
 
     };

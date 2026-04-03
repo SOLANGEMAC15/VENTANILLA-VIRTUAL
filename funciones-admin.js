@@ -192,6 +192,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     calendar.render();
 
+    cargarNotificaciones();
+
+    setInterval(() => {
+        calendar.refetchEvents();
+    }, 5000);
+
     document.getElementById('area-admin').addEventListener('change', function() {
         calendar.refetchEvents();
     });
@@ -323,5 +329,29 @@ function eliminarCajera(id) {
 
             });
         }
+    });
+}
+
+function cargarNotificaciones() {
+    fetch('obtener_notificaciones.php')
+    .then(res => res.json())
+    .then(data => {
+
+        const contenedor = document.getElementById('lista-notificaciones');
+        contenedor.innerHTML = '';
+
+        data.forEach(n => {
+            const hora = n.hora_inicio.substring(0,5);
+
+            const item = `
+            <div class="notificacion-item">
+                <b>${n.nombres.split(' ')[0]}</b> pagó su reserva<br>
+                <small>${n.local} - ${hora} (${n.fecha})</small>
+            </div>
+            `;
+
+            contenedor.insertAdjacentHTML('beforeend', item);
+        });
+
     });
 }

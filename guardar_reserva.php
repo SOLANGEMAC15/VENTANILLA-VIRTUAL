@@ -20,6 +20,7 @@ $monto = $_POST['monto'];
 // VALIDAR SI YA EXISTE RESERVA EN ESE HORARIO 
 $verificar = "SELECT * FROM reservas 
 WHERE fecha = '$fecha'
+AND local = '$local'
 AND estado != 'Rechazado'
 AND (
 ('$hora_inicio' < hora_fin) AND ('$hora_fin' > hora_inicio)

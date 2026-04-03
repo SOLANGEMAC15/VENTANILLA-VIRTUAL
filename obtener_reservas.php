@@ -38,7 +38,8 @@ while($row = $result->fetch_assoc()) {
             "correo" => $row['correo'],
             "ubicacion" => $row['ubicacion'],
             "actividad" => $row['actividad'],
-            "codigo" => $row['codigo']
+            "codigo" => $row['codigo'],
+            "local" => $row['local']
         ],
         "className" => $clase
     ];
