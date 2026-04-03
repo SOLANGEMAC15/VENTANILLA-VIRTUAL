@@ -15,6 +15,7 @@ $hora_fin = $_POST['hora_fin'];
 $estado = $_POST['estado']; 
 $codigo = $_POST['codigo']; 
 $local = $conn->real_escape_string($_POST['local']);
+$monto = $_POST['monto'];
 
 // VALIDAR SI YA EXISTE RESERVA EN ESE HORARIO 
 $verificar = "SELECT * FROM reservas 
@@ -33,9 +34,9 @@ if ($resultado->num_rows > 0) {
     
 // Insertar en BD 
 $sql = "INSERT INTO reservas 
-(codigo, nombres, apellidos, dni, celular, correo, ubicacion, actividad, tipo, fecha, hora_inicio, hora_fin, estado, local) 
+(codigo, nombres, apellidos, dni, celular, correo, ubicacion, actividad, tipo, fecha, hora_inicio, hora_fin, estado, local, monto) 
 VALUES 
-('$codigo','$nombres','$apellidos','$dni','$celular','$correo','$ubicacion','$actividad','$tipo','$fecha','$hora_inicio','$hora_fin','$estado','$local')"; 
+('$codigo','$nombres','$apellidos','$dni','$celular','$correo','$ubicacion','$actividad','$tipo','$fecha','$hora_inicio','$hora_fin','$estado','$local', '$monto')"; 
 
 if ($conn->query($sql) === TRUE) { 
     echo "ok"; 

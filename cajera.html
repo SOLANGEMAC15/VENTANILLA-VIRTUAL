@@ -28,22 +28,71 @@
         </div>
     </div>
     <script>
-        function validar() {
-            const cod = document.getElementById('cod').value;
-            if(cod.length === 6) {
-                Swal.fire({
-                    title: 'Ficha Encontrada',
-                    html: `<div style="text-align:left;"><b>Solicitante:</b> Juan Perez<br><b>Monto:</b> S/ 50.00</div>`,
+    function validar() {
+        const cod = document.getElementById('cod').value;
+        
+        if (cod.length !== 6) {
+            Swal.fire('Error', 'Ingrese un código válido', 'error');
+            return;
+        }
+        
+        // BUSCAR EN BD
+        fetch(`buscar_reserva.php?codigo=${cod}`)
+        .then(res => res.json())
+        .then(data => {
+            
+            if (!data.ok) {
+                Swal.fire('Error', 'No se encontró la reserva', 'error');
+                return;
+            }
+
+            // Si ya pagó
+            if (data.estado === "Pagado") {
+                Swal.fire('Aviso', 'Esta reserva ya fue pagada', 'info');
+                return;
+            }
+            
+            Swal.fire({
+                title: 'Ficha Encontrada',
+                html: `
+                <div style="text-align:left;">
+                    <b>Solicitante:</b> ${data.nombres} ${data.apellidos}<br>
+                    <b>Monto:</b> S/ ${data.monto}
+                    </div>
+                    `,
                     showCancelButton: true,
                     confirmButtonText: 'REGISTRAR PAGO',
                     confirmButtonColor: '#28a745'
                 }).then((r) => {
-                    if(r.isConfirmed) Swal.fire('Pago Verificado', 'La reserva ahora puede ser aprobada por el admin.', 'success');
+                    if (r.isConfirmed) {
+                        
+                        // GUARDAR PAGO
+                        fetch('registrar_pago.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: new URLSearchParams({
+                                codigo: cod
+                            })
+                        })
+                        .then(res => res.text())
+                        .then(resp => {
+                            
+                            if (resp === "ok") {
+                                Swal.fire(
+                                    'Pago Registrado',
+                                    'La reserva ahora puede ser aprobada por el admin.',
+                                    'success'
+                                );
+                            } else {
+                                Swal.fire('Error', 'No se pudo registrar el pago', 'error');
+                            }
+                        });
+                    }
                 });
-            } else {
-                Swal.fire('Error', 'Ingrese un código válido', 'error');
+            });
             }
-        }
-    </script>
+        </script>
 </body>
 </html>

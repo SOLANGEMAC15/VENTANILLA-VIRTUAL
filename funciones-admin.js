@@ -196,6 +196,9 @@ document.addEventListener('DOMContentLoaded', function() {
         calendar.refetchEvents();
     });
 
+    cargarCajeras();
+});
+
     // MOSTRAR / OCULTAR CONTRASEÑA
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('new-p');
@@ -220,33 +223,105 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-});
-
 // FUNCIÓN CAJERA
+function cargarCajeras() {
+    fetch('obtener_usuarios.php')
+    .then(res => res.json())
+    .then(data => {
+
+        console.log(data);
+
+        const tbody = document.getElementById('tbody-usuarios');
+        tbody.innerHTML = '';
+
+        data.forEach(u => {
+            const fila = `
+            <tr>
+                <td><b>${u.usuario}</b></td>
+                <td><span class="badge-rol">Caja</span></td>
+                <td><code>${u.contraseña}</code></td>
+                <td>
+                    <button class="btn-delete" onclick="eliminarCajera(${u.id})">
+                        ELIMINAR
+                    </button>
+                </td>
+            </tr>`;
+            
+            tbody.insertAdjacentHTML('beforeend', fila);
+        });
+
+    });
+}
+
 function agregarCajera() {
 
     const u = document.getElementById('new-u').value.trim();
     const p = document.getElementById('new-p').value.trim();
-    
-    if(u && p) {
 
-        const fila = `
-        <tr>
-            <td><b>${u}</b></td>
-            <td><span class="badge-rol">Caja</span></td>
-            <td><code>${p}</code></td>
-            <td><button class="btn-delete" onclick="this.closest('tr').remove()">ELIMINAR</button></td>
-        </tr>`;
-
-        document.getElementById('tbody-usuarios').insertAdjacentHTML('beforeend', fila);
-
-        Swal.fire('¡Usuario Creado!', `La cajera <b>${u}</b> ha sido registrada con éxito.`, 'success');
-
-        document.getElementById('new-u').value = '';
-        document.getElementById('new-p').value = '';
-        document.getElementById('new-p').setAttribute('type', 'password');
-
-    } else {
-        Swal.fire('Atención', 'Debes ingresar un usuario y contraseña.', 'warning');
+    if (!u || !p) {
+        Swal.fire('Atención', 'Completa los campos', 'warning');
+        return;
     }
+
+    fetch('crear_usuario.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+            usuario: u,
+            password: p
+        })
+    })
+    .then(res => res.text())
+    .then(resp => {
+
+        if (resp === "ok") {
+            Swal.fire('Éxito', 'Cajera creada', 'success');
+            cargarCajeras();
+
+            document.getElementById('new-u').value = '';
+            document.getElementById('new-p').value = '';
+        } else {
+            Swal.fire('Error', 'No se pudo crear', 'error');
+        }
+
+    });
+}
+
+function eliminarCajera(id) {
+
+    Swal.fire({
+        title: '¿Eliminar usuario?',
+        text: 'Esta acción no se puede deshacer',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        confirmButtonColor: '#dc3545'
+    }).then((result) => {
+
+        if (result.isConfirmed) {
+
+            fetch('eliminar_usuario.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    id: id
+                })
+            })
+            .then(res => res.text())
+            .then(resp => {
+
+                if (resp === "ok") {
+                    Swal.fire('Eliminado', 'Usuario eliminado', 'success');
+                    cargarCajeras();
+                } else {
+                    Swal.fire('Error', 'No se pudo eliminar', 'error');
+                }
+
+            });
+        }
+    });
 }

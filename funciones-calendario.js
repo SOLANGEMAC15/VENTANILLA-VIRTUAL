@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         info.el.style.backgroundColor = "#ffc107"; 
                         } 
                         else if (estado === "Pagado") {
-                            info.el.style.backgroundColor = "#17a2b8"; 
+                            info.el.style.backgroundColor = "#28a745"; 
                             }
                         },
 
@@ -124,13 +124,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let horaInicio = esTodoDia ? 8 : parseInt(selectHora.value);
 
-        // 1. VALIDACIÓN: HORARIO DE ATENCIÓN GENERAL
-        if (ahora.getDay() === 0 || ahora.getDay() === 6 || ahora.getHours() < 8 || ahora.getHours() >= 23) {
-            Swal.fire({ icon: 'error', title: 'Fuera de Horario', text: 'Atención de Lunes a Viernes de 8 a.m. a 11 p.m.', confirmButtonColor: '#2c5697' });
+        // VALIDACIÓN: HORARIO DE ATENCIÓN GENERAL
+        if (ahora.getDay() === 0 || ahora.getDay() === 6 || ahora.getHours() < 8 || ahora.getHours() >= 17) {
+            Swal.fire({ icon: 'error', title: 'Fuera de Horario', text: 'Atención de Lunes a Viernes de 8 a.m. a 5 p.m.', confirmButtonColor: '#2c5697' });
             return;
         }
 
-        // 2. NUEVA VALIDACIÓN: BLOQUEAR HORAS PASADAS DE HOY
+        // NUEVA VALIDACIÓN: BLOQUEAR HORAS PASADAS DE HOY
         const hoyLiteral = ahora.toLocaleDateString('en-CA'); // Obtiene YYYY-MM-DD local
         if (fechaSeleccionada === hoyLiteral && horaInicio <= ahora.getHours()) {
             Swal.fire({ 
@@ -237,7 +237,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         hora_fin: horaFinNum + ":00:00",
                         estado: 'Pendiente de pago',
                         codigo: codigoReserva,
-                        local: nombreArea
+                        local: nombreArea,
+                        monto: totalFormateado
                     })
                 })
 

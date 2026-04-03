@@ -35,18 +35,40 @@
         </form>
     </div>
     <script>
-        document.getElementById('loginForm').onsubmit = function(e) {
-            e.preventDefault();
-            const u = document.getElementById('usuario').value;
-            const p = document.getElementById('password').value;
-
-            if(u === "admin" && p === "admin123") {
-                window.location.href = "admin.html";
-            } else if(u.startsWith("cajera") && p === "caja123") {
-                window.location.href = "cajera.html";
-            } else {
+    document.getElementById('loginForm').onsubmit = function(e) {
+        e.preventDefault();
+        
+        const usuario = document.getElementById('usuario').value;
+        const password = document.getElementById('password').value;
+        
+        fetch('login.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                usuario: usuario,
+                password: password
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            
+            if (!data.ok) {
                 Swal.fire('Error', 'Credenciales incorrectas', 'error');
+                return;
             }
+
+            // REDIRECCIÓN SEGÚN ROL
+            if (data.rol === "admin") {
+                Swal.fire('Bienvenido', 'Acceso como Administrador', 'success')
+                .then(() => window.location.href = 'admin.html');
+            } 
+            else if (data.rol === "cajera") {
+                Swal.fire('Bienvenido', 'Acceso al Módulo de Caja', 'success')
+                .then(() => window.location.href = 'cajera.html');
+            }
+        });
         };
     </script>
 </body>
