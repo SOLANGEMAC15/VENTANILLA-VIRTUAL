@@ -84,14 +84,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (tipo.includes("conces")) {
                 if (estado === "aprobado") {
-                    info.el.style.backgroundColor = "#2c5697"; 
+                    info.el.style.setProperty('background-color', '#2c5697', 'important');
                 } else if (estado === "rechazado") {
-                    info.el.style.backgroundColor = "#dc3545";
+                    info.el.style.setProperty('background-color', '#dc3545', 'important');
                 } else {
-                    info.el.style.backgroundColor = "#6c757d";
-                    }
-                info.el.style.color = "#fff";
-                return;
+                    info.el.style.setProperty('background-color', '#6c757d', 'important');
+                }
+                info.el.style.setProperty('color', '#ffffff', 'important');
+                return; 
             }
             
             if (estado === "aprobado") {
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <b>${arg.event.title}</b><br>
                     <span>${arg.timeText}</span><br>
                     <span>${info.tipo}</span><br>
-                    <span style="font-weight: bold; color: #ffeb3b;">${info.estado}</span>
+                    <span style="font-weight: bold; color: #ffff;">${info.estado}</span>
                 </div>`
             };
         },

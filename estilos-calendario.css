@@ -128,6 +128,6 @@ button#btn-reservar:hover {
 }
 
 .reserva-pendiente {
-    background-color: #ffc107 !important;
+    background-color: #ffc107;
     color: #000 !important;
 }

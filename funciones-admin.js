@@ -35,15 +35,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const estado = (info.event.extendedProps.estado || "").trim().toLowerCase();
         const tipo = (info.event.extendedProps.tipo || "").trim().toLowerCase();
 
-        if (tipo.includes("concesion")) {
-            if (estado.includes("aprobado")) {
-                info.el.style.backgroundColor = "#2c5697";
-            } else if (estado.includes("rechazado")) {
-                info.el.style.backgroundColor = "#dc3545";
+        if (tipo.includes("conces")) {
+            if (estado === "aprobado") {
+                info.el.style.setProperty('background-color', '#2c5697', 'important');
+            } else if (estado === "rechazado") {
+                info.el.style.setProperty('background-color', '#dc3545', 'important');
             } else {
-                info.el.style.backgroundColor = "#6c757d";
+                info.el.style.setProperty('background-color', '#6c757d', 'important');
             }
-            info.el.style.color = "#fff";
+            info.el.style.setProperty('color', '#ffffff', 'important');
             return;
         }
 
@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } 
         else if (estado.includes("pendiente")) {
             info.el.style.backgroundColor = "#ffc107";
+            info.el.style.color = "#000";
         } 
         else if (estado.includes("pagado")) {
             info.el.style.backgroundColor = "#28a745";
@@ -103,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <b>${arg.event.title}</b><br>
                 <span>${arg.timeText}</span><br>
                 <span>${info.tipo}</span><br>
-                <span style="font-weight:bold; color:#fff;">${info.estado}</span>
+                <span style="font-weight:bold; color: #fff;">${info.estado}</span>
                 </div>`
             };
         },
@@ -144,6 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     setInterval(() => {
         calendar.refetchEvents();
+        cargarNotificaciones();
     }, 5000);
 
     document.getElementById('area-admin').addEventListener('change', function() {
@@ -427,7 +429,7 @@ function abrirDetalleEvento(evento) {
                         if (resp === "ok") {
                             evento.remove();
 
-                            eliminarNotificacion(datos.codigo); // 🔥 CLAVE
+                            eliminarNotificacion(datos.codigo);
 
                             Swal.fire('Rechazado', 'Reserva eliminada', 'success');
                         }
