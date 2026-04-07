@@ -42,7 +42,7 @@
         .then(data => {
             
             if (!data.ok) {
-                Swal.fire('Error', 'No se encontró la reserva', 'error');
+                Swal.fire('Error', data.mensaje || 'No se encontró la reserva', 'error');
                 return;
             }
 

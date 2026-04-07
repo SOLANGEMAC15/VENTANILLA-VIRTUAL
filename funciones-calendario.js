@@ -79,21 +79,37 @@ document.addEventListener('DOMContentLoaded', function() {
         },
 
         eventDidMount: function(info) {
-            const estado = info.event.extendedProps.estado;
+            const estado = (info.event.extendedProps.estado || "").trim().toLowerCase();
+            const tipo = (info.event.extendedProps.tipo || "").trim().toLowerCase();
             
-            if (estado === "Aprobado") {
+            if (tipo.includes("conces")) {
+                if (estado === "aprobado") {
+                    info.el.style.backgroundColor = "#2c5697"; 
+                } else if (estado === "rechazado") {
+                    info.el.style.backgroundColor = "#dc3545";
+                } else {
+                    info.el.style.backgroundColor = "#6c757d";
+                    }
+                info.el.style.color = "#fff";
+                return;
+            }
+            
+            if (estado === "aprobado") {
                 info.el.style.backgroundColor = "#2c5697";
-                } 
-                else if (estado === "Rechazado") {
-                    info.el.style.backgroundColor = "#dc3545"; 
-                    } 
-                    else if (estado === "Pendiente de pago") {
-                        info.el.style.backgroundColor = "#ffc107"; 
-                        } 
-                        else if (estado === "Pagado") {
-                            info.el.style.backgroundColor = "#28a745"; 
-                            }
-                        },
+            } 
+            else if (estado === "rechazado") {
+                info.el.style.backgroundColor = "#dc3545"; 
+            } 
+            else if (estado === "pendiente de pago") {
+                info.el.style.backgroundColor = "#ffc107"; 
+            } 
+            else if (estado === "pagado") {
+                info.el.style.backgroundColor = "#28a745"; 
+            }
+
+            console.log("TIPO:", tipo);
+            console.log("ESTADO:", estado);
+        },             
 
         eventContent: function(arg) {
             let info = arg.event.extendedProps;
@@ -125,16 +141,20 @@ document.addEventListener('DOMContentLoaded', function() {
         let horaInicio = esTodoDia ? 8 : parseInt(selectHora.value);
 
         // VALIDACIÓN: HORARIO DE ATENCIÓN GENERAL
-        if (ahora.getDay() === 0 || ahora.getDay() === 6 || ahora.getHours() < 8 || ahora.getHours() >= 17) {
-            Swal.fire({ icon: 'error', title: 'Fuera de Horario', text: 'Atención de Lunes a Viernes de 8 a.m. a 5 p.m.', confirmButtonColor: '#2c5697' });
+        if (ahora.getDay() === 0 || ahora.getDay() === 6) {
+            Swal.fire({ 
+                icon: 'error', 
+                title: 'Día no permitido', 
+                text: 'Atención solo de lunes a viernes.', 
+                confirmButtonColor: '#2c5697' 
+            });
             return;
         }
 
-        // NUEVA VALIDACIÓN: BLOQUEAR HORAS PASADAS DE HOY
         const hoy = new Date();
         hoy.setHours(0,0,0,0);
         
-        const fechaSel = new Date(fechaSeleccionada);
+        const fechaSel = new Date(fechaSeleccionada + 'T00:00:00');
         
         if (fechaSel < hoy) {
             Swal.fire({
@@ -146,15 +166,31 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // VALIDAR HORA SOLO SI ES HOY
-        if (
-            fechaSel.getTime() === hoy.getTime() &&
-            horaInicio <= ahora.getHours()
-        ) {
+        const anio = ahora.getFullYear();
+        const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+        const dia = String(ahora.getDate()).padStart(2, '0');
+        const hoyFormateado = `${anio}-${mes}-${dia}`;
+        
+        if (fechaSeleccionada === hoyFormateado) {
+            const horaActual = ahora.getHours();
+            const minutosActuales = ahora.getMinutes();
+
+            if (horaInicio < horaActual || (horaInicio === horaActual && minutosActuales > 0)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Hora inválida',
+                    text: 'La hora seleccionada ya ha pasado. Por favor, elige una hora posterior.',
+                    confirmButtonColor: '#2c5697'
+                });
+                return;
+            }
+        }
+
+        if (horaInicio < 8 || horaInicio >= 23) {
             Swal.fire({
                 icon: 'error',
-                title: 'Hora inválida',
-                text: 'No puedes reservar una hora pasada.',
+                title: 'Horario inválido',
+                text: 'Solo puedes reservar entre 8:00 a.m. y 11:00 p.m.',
                 confirmButtonColor: '#2c5697'
             });
             return;
@@ -224,15 +260,53 @@ document.addEventListener('DOMContentLoaded', function() {
             const primerNombre = nombres.split(' ')[0];
             const nombreCompleto = `${nombres} ${apellidos}`;
 
-            if (tipoSolicitud === "Concesión") {
-                calendar.addEvent({
-                    title: nombreCompleto,
-                    start: inicioReserva,
-                    end: finReserva,
-                    className: 'reserva-concesion',
-                    extendedProps: { tipo: tipoSolicitud, estado: 'Esperando respuesta', codigo: 'PENDIENTE' }
+            if (tipoSolicitud.toLowerCase().includes("conces")) {
+                const codigoReserva = generarCodigoUnico();
+    
+                fetch('guardar_reserva.php', {        
+                    method: 'POST',        
+                    headers: {            
+                        'Content-Type': 'application/x-www-form-urlencoded'        
+                    },        
+                    body: new URLSearchParams({            
+                        nombres,            
+                        apellidos,            
+                        dni,            
+                        celular,            
+                        correo,            
+                        ubicacion,            
+                        actividad,            
+                        tipo: tipoSolicitud,            
+                        fecha: fechaSeleccionada,            
+                        hora_inicio: horaInicio + ":00:00",            
+                        hora_fin: horaFinNum + ":00:00",            
+                        estado: 'Pendiente de evaluación',            
+                        codigo: codigoReserva,            
+                        local: nombreArea,            
+                        monto: 0        
+                    })
+    
+                })
+    
+                .then(res => res.text())    
+                .then(data => {
+        
+                    if (data === "ok") {
+            
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Solicitud enviada',
+                            html: `
+                            <p>Tu solicitud de concesión fue registrada correctamente.</p>
+                            <p>Un administrador se comunicará contigo para continuar el proceso.</p>
+                            `,
+                            confirmButtonColor: '#2c5697'
+                        });
+            
+                        calendar.refetchEvents();        
+                    }    
                 });
-                Swal.fire({ icon: 'info', title: 'Solicitud en revisión', text: 'Su solicitud de Concesión ha sido registrada.', confirmButtonColor: '#2c5697' });
+
             } else {
                 const codigoReserva = generarCodigoUnico();
 
@@ -276,13 +350,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
 
                     if (data === "ok") {
-                        calendar.addEvent({
-                            title: primerNombre,
-                            start: inicioReserva,
-                            end: finReserva,
-                            className: 'reserva-pendiente',
-                            extendedProps: { tipo: tipoSolicitud, estado: 'Pendiente de pago', codigo: codigoReserva, local: nombreArea }
-                        });
 
                         // Limpiar campos
                         document.getElementById('nombres').value = '';
@@ -301,7 +368,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <p>Total a pagar: <b>S/ ${totalFormateado}</b></p>
                             <p>Descargue su ficha PDF para pagar en Caja.</p>
                             `,
-                            confirmButtonText: 'Descargar PDF',                 
+                            confirmButtonText: 'Descargar PDF',                  
                             confirmButtonColor: '#2974b8'
                         
                         }).then((result) => {

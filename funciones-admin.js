@@ -1,4 +1,6 @@
-// LÓGICA DE NAVEGACIÓN ENTRE SECCIONES
+let codigoPendiente = null;
+let calendar;
+
 function ver(s) {
     document.getElementById('seccion-calendario').style.display = s === 'calendario' ? 'flex' : 'none';
     document.getElementById('seccion-usuarios').style.display = s === 'usuarios' ? 'flex' : 'none';
@@ -16,17 +18,48 @@ document.addEventListener('DOMContentLoaded', function() {
     // CONFIGURACIÓN DEL CALENDARIO 
     var calendarEl = document.getElementById('calendar');
 
-    var calendar = new FullCalendar.Calendar(calendarEl, {
+    calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'timeGridWeek',
         locale: 'es',
 
         events: function(fetchInfo, successCallback, failureCallback) {
             const local = document.getElementById('area-admin').value;
-            fetch(`obtener_reservas.php?local=${encodeURIComponent(local)}`)
+            const tipo = document.getElementById('filtro-tipo').value;
+            fetch(`obtener_reservas.php?local=${encodeURIComponent(local)}&tipo=${tipo}`)
                 .then(response => response.json())
                 .then(data => successCallback(data))
                 .catch(error => failureCallback(error));
         },
+
+        eventDidMount: function(info) {
+        const estado = (info.event.extendedProps.estado || "").trim().toLowerCase();
+        const tipo = (info.event.extendedProps.tipo || "").trim().toLowerCase();
+
+        if (tipo.includes("concesion")) {
+            if (estado.includes("aprobado")) {
+                info.el.style.backgroundColor = "#2c5697";
+            } else if (estado.includes("rechazado")) {
+                info.el.style.backgroundColor = "#dc3545";
+            } else {
+                info.el.style.backgroundColor = "#6c757d";
+            }
+            info.el.style.color = "#fff";
+            return;
+        }
+
+        if (estado.includes("aprobado")) {
+            info.el.style.backgroundColor = "#2c5697";
+        } 
+        else if (estado.includes("rechazado")) {
+            info.el.style.backgroundColor = "#dc3545";
+        } 
+        else if (estado.includes("pendiente")) {
+            info.el.style.backgroundColor = "#ffc107";
+        } 
+        else if (estado.includes("pagado")) {
+            info.el.style.backgroundColor = "#28a745";
+        }
+    },
 
         slotMinTime: '08:00:00',
         slotMaxTime: '23:00:00',
@@ -75,118 +108,33 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         },
 
+        eventsSet: function(eventos) {
+            
+            console.log("Eventos cargados:", eventos.map(e => e.extendedProps));
+            console.log("Buscando código:", codigoPendiente);
+            
+            if (!codigoPendiente) return;
+            
+            const evento = eventos.find(ev => 
+                String(ev.extendedProps.codigo) === String(codigoPendiente)
+            );
+            
+            if (evento) {
+                console.log("Evento encontrado:", evento);
+                
+                setTimeout(() => {
+                    abrirDetalleEvento(evento);
+                }, 300);
+
+                codigoPendiente = null;
+            } else {
+                console.log("⏳ Aún no se encuentra el evento...");
+            }
+        },
+
         // CLICK EN RESERVA
         eventClick: function(info) {
-            const datos = info.event.extendedProps;
-            let botones = {};
-            
-            // CONTROL SEGÚN ESTADO
-            if (datos.estado === "Pendiente de pago" || datos.estado === "Pagado") {
-                botones = {
-                    showDenyButton: true,
-                    confirmButtonText: 'Aprobar',
-                    denyButtonText: 'Rechazar',
-                    confirmButtonColor: '#28a745',
-                    denyButtonColor: '#dc3545'
-                };
-            } else {
-                // Si ya está aprobado o rechazado
-                botones = {
-                    showConfirmButton: false,
-                    showDenyButton: false
-                };
-            }
-            
-            Swal.fire({
-                title: 'Detalle de Reserva',
-                html: `
-                <b>Código:</b> ${datos.codigo}<br>        
-                <b>Nombre:</b> ${datos.nombres} ${datos.apellidos}<br>
-                <b>DNI:</b> ${datos.dni}<br>
-                <b>Celular:</b> ${datos.celular}<br>
-                <b>Correo:</b> ${datos.correo}<br>
-                <b>Ubicación:</b> ${datos.ubicacion}<br>
-                <b>Actividad:</b> ${datos.actividad}<br>
-                <b>Tipo:</b> ${datos.tipo}<br>
-                <b>Estado:</b> <b>${datos.estado}</b>
-                `,
-                showCloseButton: true,
-                ...botones
-            }).then((result) => {
-
-                // APROBAR
-                if (result.isConfirmed) {
-                    
-                    // OPCIONAL: SOLO APROBAR SI ESTÁ PAGADO
-                    if (datos.estado !== "Pagado") {
-                        Swal.fire('Error', 'Primero debe estar PAGADO', 'warning');
-                        return;
-                    }
-                    
-                    fetch('actualizar_estado.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: new URLSearchParams({
-                            codigo: datos.codigo,
-                            estado: 'Aprobado'
-                        })
-                    })
-                    .then(res => res.text())
-                    .then(respuesta => {
-                        if (respuesta === "ok") {
-                            
-                            info.event.setProp('classNames', ['reserva-aprobada']);
-                            info.event.setExtendedProp('estado', 'Aprobado');
-                            
-                            Swal.fire('Aprobado', 'La reserva fue aprobada.', 'success');
-                        
-                        } else {
-                            Swal.fire('Error', 'No se pudo actualizar', 'error');
-                        }
-                    });
-                }
-                
-                // RECHAZAR
-                else if (result.isDenied) {
-                    
-                    Swal.fire({
-                        title: 'Motivo de rechazo',
-                        input: 'textarea',
-                        showCancelButton: true,
-                        confirmButtonText: 'Confirmar'
-                    }).then((motivoResult) => {
-                        
-                        if (motivoResult.isConfirmed) {
-                            
-                            fetch('actualizar_estado.php', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/x-www-form-urlencoded'
-                                },
-                                body: new URLSearchParams({
-                                    codigo: datos.codigo,
-                                    estado: 'Rechazado',
-                                    motivo: motivoResult.value
-                                })
-                            })
-                            .then(res => res.text())
-                            .then(respuesta => {
-                                
-                                if (respuesta === "ok") {
-                                    info.event.remove();
-                                    
-                                    Swal.fire('Rechazado', 'Reserva eliminada.', 'success');
-                                
-                                } else {
-                                    Swal.fire('Error', 'No se pudo rechazar', 'error');
-                                }
-                            });
-                        }
-                    });
-                }
-            });
+            abrirDetalleEvento(info.event);
         }
     });
 
@@ -199,6 +147,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 5000);
 
     document.getElementById('area-admin').addEventListener('change', function() {
+        calendar.refetchEvents();
+    });
+
+    document.getElementById('filtro-tipo').addEventListener('change', function() {
+        cargarNotificaciones();
         calendar.refetchEvents();
     });
 
@@ -333,7 +286,9 @@ function eliminarCajera(id) {
 }
 
 function cargarNotificaciones() {
-    fetch('obtener_notificaciones.php')
+    
+    const tipo = document.getElementById('filtro-tipo').value;
+    fetch(`obtener_notificaciones.php?tipo=${tipo}`)
     .then(res => res.json())
     .then(data => {
 
@@ -343,15 +298,156 @@ function cargarNotificaciones() {
         data.forEach(n => {
             const hora = n.hora_inicio.substring(0,5);
 
-            const item = `
-            <div class="notificacion-item">
-                <b>${n.nombres.split(' ')[0]}</b> pagó su reserva<br>
+            const div = document.createElement('div');
+            div.classList.add('notificacion-item');
+            
+            let mensaje = "";            
+            if (n.tipo === "Concesión") {
+                mensaje = `<b>${n.nombres.split(' ')[0]}</b> solicitó concesión`;
+                div.style.backgroundColor = "#f1f3f5";
+                div.style.color = "#333";
+                div.style.borderLeft = "5px solid #6c757d"; 
+            } else {
+                mensaje = `<b>${n.nombres.split(' ')[0]}</b> pagó su reserva`;
+                div.style.backgroundColor = "#e6f4ea";
+                div.style.color = "#155724";
+                div.style.borderLeft = "5px solid #28a745";
+                }
+                div.innerHTML = `
+                ${mensaje}<br>
                 <small>${n.local} - ${hora} (${n.fecha})</small>
-            </div>
-            `;
-
-            contenedor.insertAdjacentHTML('beforeend', item);
+                `;
+            
+            div.addEventListener('click', () => {
+                irAReserva(n.codigo, n.fecha, n.local);
+            });
+            
+            contenedor.appendChild(div);
         });
 
     });
 }
+
+function irAReserva(codigo, fecha, local) {
+    
+    console.log("Código que llega:", codigo);
+
+    ver('calendario');
+    document.getElementById('area-admin').value = local;
+
+    codigoPendiente = codigo;
+    calendar.gotoDate(fecha);
+    calendar.refetchEvents();
+
+}
+
+function abrirDetalleEvento(evento) {
+
+    const datos = evento.extendedProps;
+    let botones = {};
+
+    if (datos.estado === "Pendiente de pago" || datos.estado === "Pagado" || datos.estado === "Pendiente de evaluación") {
+        botones = {
+            showDenyButton: true,
+            confirmButtonText: 'Aprobar',
+            denyButtonText: 'Rechazar',
+            confirmButtonColor: '#28a745',
+            denyButtonColor: '#dc3545'
+        };
+    } else {
+        botones = {
+            showConfirmButton: false,
+            showDenyButton: false
+        };
+    }
+
+    Swal.fire({
+        title: 'Detalle de Reserva',
+        html: `
+        <b>Código:</b> ${datos.codigo}<br>        
+        <b>Nombre:</b> ${datos.nombres} ${datos.apellidos}<br>
+        <b>DNI:</b> ${datos.dni}<br>
+        <b>Celular:</b> ${datos.celular}<br>
+        <b>Correo:</b> ${datos.correo}<br>
+        <b>Ubicación:</b> ${datos.ubicacion}<br>
+        <b>Actividad:</b> ${datos.actividad}<br>
+        <b>Tipo:</b> ${datos.tipo}<br>
+        <b>Estado:</b> <b>${datos.estado}</b>
+        `,
+        showCloseButton: true,
+        ...botones
+    }).then((result) => {
+
+        if (result.isConfirmed) {
+
+            if (datos.tipo !== "Concesión" && datos.estado !== "Pagado") {
+                Swal.fire('Error', 'Primero debe estar PAGADO', 'warning');
+                return;
+            }
+
+            fetch('actualizar_estado.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: new URLSearchParams({
+                    codigo: datos.codigo,
+                    estado: 'Aprobado'
+                })
+            })
+            .then(res => res.text())
+            .then(resp => {
+                if (resp === "ok") {
+                    evento.setExtendedProp('estado', 'Aprobado');
+                    eliminarNotificacion(datos.codigo);
+                    Swal.fire('Aprobado', 'Reserva aprobada', 'success');
+                }
+            });
+        }
+
+        else if (result.isDenied) {
+
+            Swal.fire({
+                title: 'Motivo de rechazo',
+                input: 'textarea',
+                showCancelButton: true
+            }).then(r => {
+
+                if (r.isConfirmed) {
+
+                    fetch('actualizar_estado.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: new URLSearchParams({
+                            codigo: datos.codigo,
+                            estado: 'Rechazado',
+                            motivo: r.value
+                        })
+                    })
+                    .then(res => res.text())
+                    .then(resp => {
+                        if (resp === "ok") {
+                            evento.remove();
+
+                            eliminarNotificacion(datos.codigo); // 🔥 CLAVE
+
+                            Swal.fire('Rechazado', 'Reserva eliminada', 'success');
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+function eliminarNotificacion(codigo) {
+    fetch('eliminar_notificacion.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({
+            codigo: codigo
+        })
+    })
+    .then(() => {
+        cargarNotificaciones();
+    });
+}
+

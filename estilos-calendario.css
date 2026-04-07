@@ -109,7 +109,7 @@ button#btn-reservar:hover {
 .fc-timegrid-slot-label-frame { height: 60px !important; display: flex; align-items: center; justify-content: center; }
 
 .reserva-pendiente { background-color: #f39c12 !important; border: none !important; opacity: 0.8; color: white !important; }
-.reserva-concesion { background-color: #95a5a6 !important; border: none !important; color: white !important; }
+.reserva-concesion { background-color: #95a5a6; border: none !important; color: white !important; }
 
 .reserva-aprobada {
     background-color: #2c5697 !important;

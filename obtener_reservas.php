@@ -4,9 +4,15 @@ include("conexion.php");
 // Obtener el local desde la URL
 $local = $conn->real_escape_string($_GET['local'] ?? '');
 
+$tipo = $_GET['tipo'] ?? 'todos';
+
 $sql = "SELECT * FROM reservas 
         WHERE local = '$local'
         AND estado != 'Rechazado'";
+
+if ($tipo !== "todos") {
+    $sql .= " AND tipo = '$tipo'";
+}
 
 $result = $conn->query($sql);
 
@@ -15,12 +21,14 @@ $reservas = [];
 while($row = $result->fetch_assoc()) {
 
     // DEFINIR COLOR SEGÚN ESTADO
-    $clase = "reserva-pendiente";
-
     if ($row['estado'] === "Aprobado") {
-        $clase = "reserva-aprobada";
+    $clase = "reserva-aprobada";
     } elseif ($row['estado'] === "Pagado") {
-        $clase = "reserva-pagada";
+    $clase = "reserva-pagada";
+    } elseif ($row['estado'] === "Rechazado") {
+    $clase = "reserva-rechazada";
+    } else {
+    $clase = "reserva-pendiente";
     }
 
     // CREAR EVENTO
